@@ -3,461 +3,471 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fletes Canter 6T</title>
+  <title>CRM Fletes - Control de Viajes y Gastos</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Firebase SDKs -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-   // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDGHK8XrHR5C3XCkJZXFrBi15AWnQ7ar38",
-  authDomain: "fletes-9c875.firebaseapp.com",
-  databaseURL: "https://fletes-9c875-default-rtdb.firebaseio.com",
-  projectId: "fletes-9c875",
-  storageBucket: "fletes-9c875.firebasestorage.app",
-  messagingSenderId: "326542139919",
-  appId: "1:326542139919:web:706972592d8b3c264f397a",
-  measurementId: "G-XXCZ5GYP5C"
-};
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Hacer funciones accesibles globalmente
-    window.db = db;
-    window.fb = { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, orderBy };
-  </script>
-
-  <style>
-    :root {
-      --app-color: #0b57d0;
-      --app-header-color: #0842a0;
-    }
-    * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; background: #f4f6f8; color: #333; }
-    .app-header { background: var(--app-header-color); color: white; text-align: center; padding: 12px 15px; font-size: 16px; font-weight: bold; }
-    nav { display: flex; background: var(--app-color); position: sticky; top: 0; z-index: 100; overflow-x: auto; }
-    nav button { flex: 1; min-width: 60px; padding: 12px 2px; color: white; background: none; border: none; font-size: 11px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
-    nav button.active { border-bottom: 3px solid #fbbc04; background: rgba(255,255,255,0.15); }
-    .container { padding: 15px; max-width: 500px; margin: 0 auto; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    label { font-size: 12px; font-weight: bold; display: block; margin-top: 10px; color: #555; }
-    input, select { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-    .btn { background: var(--app-color); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; margin-top: 15px; font-size: 15px; cursor: pointer; }
-    .btn-success { background: #188038; }
-    .btn-danger { background: #d93025; }
-    .btn-small { padding: 6px 10px; font-size: 12px; margin-top: 5px; width: auto; display: inline-block; }
-    .btn-wa { background: #25D366; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; margin-top: 10px; font-size: 14px; cursor: pointer; }
-    .card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    .card-title { font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #1f1f1f; }
-    .row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .val-pos { color: #188038; font-weight: bold; }
-    .val-neg { color: #d93025; font-weight: bold; }
-    .total-box { background: #e8f0fe; border: 1px solid #aecbfa; border-radius: 8px; padding: 12px; margin-top: 15px; text-align: center; }
-    .total-price { font-size: 22px; font-weight: bold; color: var(--app-color); margin-top: 4px; }
-    #mensaje { text-align: center; font-weight: bold; color: #188038; margin-top: 15px; padding: 10px; background: #e6f4ea; border-radius: 6px; display: none; }
-  </style>
+  <!-- Firebase JS SDK (v9 Compatibilidad) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
-  <header class="app-header" id="appTitleHeader">
-    🚛 Fletes Canter 6T
+  <!-- Encabezado -->
+  <header class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50 shadow-md">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <h1 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+        <i class="fa-solid fa-truck-fast"></i> CRM Fletes
+      </h1>
+      <span id="connectionStatus" class="text-xs px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 font-semibold border border-yellow-500/30">
+        Conectando...
+      </span>
+    </div>
   </header>
 
-  <nav>
-    <button class="active" onclick="switchTab('cotizador', this)">🧮 Cotizar</button>
-    <button onclick="switchTab('viajes', this)">🚛 Viaje</button>
-    <button onclick="switchTab('ingresos', this)">💰 Ingreso</button>
-    <button onclick="switchTab('gastos', this); cargarGastos();">💸 Gasto</button>
-    <button onclick="switchTab('resumen', this); cargarResumen();">📊 Ganancias</button>
+  <!-- Navegación por Pestañas -->
+  <nav class="bg-slate-800/80 border-b border-slate-700 sticky top-14 z-40 backdrop-blur-md">
+    <div class="max-w-4xl mx-auto flex overflow-x-auto text-sm">
+      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-amber-400 text-amber-400 whitespace-nowrap">
+        <i class="fa-solid fa-chart-line"></i> Resumen
+      </button>
+      <button onclick="switchTab('viajes')" id="tab-viajes" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
+        <i class="fa-solid fa-route"></i> Viajes
+      </button>
+      <button onclick="switchTab('ingresos')" id="tab-ingresos" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
+        <i class="fa-solid fa-hand-holding-dollar"></i> Ingresos
+      </button>
+      <button onclick="switchTab('gastos')" id="tab-gastos" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
+        <i class="fa-solid fa-receipt"></i> Gastos
+      </button>
+      <button onclick="switchTab('config')" id="tab-config" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
+        <i class="fa-solid fa-gear"></i> Configuración
+      </button>
+    </div>
   </nav>
 
-  <div class="container">
+  <!-- Contenido Principal -->
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4 space-y-6">
 
-    <!-- TAB COTIZADOR -->
-    <div id="cotizador" class="tab-content active">
-      <div class="card">
-        <div class="card-title">Cotizador Rápido de Servicio</div>
-        
-        <label>Cliente / Referencia</label>
-        <input type="text" id="c_cliente" placeholder="Ej: Juan Pérez" oninput="calcularCotizacion()">
-
-        <label>Base Fija (Gs.)</label>
-        <input type="number" id="c_base" value="200000" oninput="calcularCotizacion()">
-
-        <div class="grid-2">
-          <div>
-            <label>Distancia (KM)</label>
-            <input type="number" id="c_km" value="10" oninput="calcularCotizacion()">
-          </div>
-          <div>
-            <label>Tarifa / KM (Gs.)</label>
-            <input type="number" id="c_tarifaKm" value="8000" oninput="calcularCotizacion()">
-          </div>
+    <!-- 1. PESTAÑA RESUMEN -->
+    <section id="sec-dashboard" class="tab-content space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-lg">
+          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Total Ingresos</p>
+          <p id="totalIngresos" class="text-2xl font-extrabold text-emerald-400 mt-1">$0</p>
         </div>
-
-        <div class="grid-2">
-          <div>
-            <label>Cant. Ayudantes</label>
-            <input type="number" id="c_peones" value="0" oninput="calcularCotizacion()">
-          </div>
-          <div>
-            <label>Valor x Ayudante (Gs.)</label>
-            <input type="number" id="c_valPeon" value="100000" oninput="calcularCotizacion()">
-          </div>
+        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-lg">
+          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Total Gastos</p>
+          <p id="totalGastos" class="text-2xl font-extrabold text-rose-400 mt-1">$0</p>
         </div>
-
-        <div class="total-box">
-          <div style="font-size: 13px; color: #555;">PRECIO TOTAL ESTIMADO</div>
-          <div class="total-price" id="c_total">Gs. 0</div>
+        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-lg">
+          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Balance Neto</p>
+          <p id="totalBalance" class="text-2xl font-extrabold text-amber-400 mt-1">$0</p>
         </div>
-
-        <button type="button" class="btn-wa" onclick="copiarMensajeWA()">📱 Copiar Presupuesto para WhatsApp</button>
       </div>
-    </div>
 
-    <!-- TAB VIAJES -->
-    <div id="viajes" class="tab-content">
-      <form id="formViaje" onsubmit="guardarV(event)">
-        <label>ID Viaje</label>
-        <input type="text" id="v_id" placeholder="Ej: V-001" required>
-        <label>Fecha</label>
-        <input type="date" id="v_fecha" required>
-        <label>Vehículo / Patente</label>
-        <input type="text" id="v_vehiculo" value="Canter 6T" required>
-        <label>Chofer</label>
-        <input type="text" id="v_chofer" placeholder="Nombre Chofer" required>
-        <label>KM Inicial</label>
-        <input type="number" id="v_kmIni" placeholder="120000" required>
-        <label>KM Final</label>
-        <input type="number" id="v_kmFin" placeholder="120250" required>
-        <label>Origen / Destino</label>
-        <input type="text" id="v_origen" placeholder="Centro -> Encarnación" required>
-        <label>ID Pedido</label>
-        <input type="text" id="v_pedido" placeholder="P-101">
-        <button type="submit" class="btn">Guardar Viaje</button>
-      </form>
-    </div>
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
+        <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Historial Reciente
+        </h2>
+        <div id="recentHistoryList" class="space-y-3">
+          <p class="text-slate-400 text-sm italic">Cargando registros...</p>
+        </div>
+      </div>
+    </section>
 
-    <!-- TAB INGRESOS -->
-    <div id="ingresos" class="tab-content">
-      <form id="formIngreso" onsubmit="guardarI(event)">
-        <label>ID Pedido</label>
-        <input type="text" id="i_pedido" placeholder="Ej: P-101" required>
-        <label>Fecha</label>
-        <input type="date" id="i_fecha" required>
-        <label>Cliente</label>
-        <input type="text" id="i_cliente" placeholder="Cliente" required>
-        <label>Descripción</label>
-        <input type="text" id="i_desc" placeholder="Flete general" required>
-        <label>Estado</label>
-        <select id="i_estado">
-          <option value="Cobrado">Cobrado</option>
-          <option value="Pendiente">Pendiente</option>
-        </select>
-        <label>Monto (Gs.)</label>
-        <input type="number" id="i_monto" placeholder="250000" required>
-        <button type="submit" class="btn btn-success">Guardar Ingreso</button>
-      </form>
-    </div>
-
-    <!-- TAB GASTOS -->
-    <div id="gastos" class="tab-content">
-      <div class="card">
-        <div class="card-title" id="gastoFormTitle">Registrar Nuevo Gasto</div>
-        <form id="formGasto" onsubmit="guardarG(event)">
-          <input type="hidden" id="g_id" value="">
-          <label>Fecha</label>
-          <input type="date" id="g_fecha" required>
-          <label>Vehículo / Patente</label>
-          <input type="text" id="g_vehiculo" value="Canter 6T" required>
-          <label>Categoría</label>
-          <select id="g_categoria">
-            <option value="Combustible">Combustible</option>
-            <option value="Peaje">Peaje</option>
-            <option value="Taller / Mantenimiento">Taller / Mantenimiento</option>
-            <option value="Chofer / Peón">Chofer / Peón</option>
-            <option value="Seguro / Impuestos">Seguro / Impuestos</option>
-            <option value="Varios">Varios</option>
-          </select>
-          <label>Detalle / Proveedor</label>
-          <input type="text" id="g_detalle" placeholder="Ej: Carga Diésel Porã" required>
-          <label>Monto (Gs.)</label>
-          <input type="number" id="g_monto" placeholder="100000" required>
-          <button type="submit" class="btn btn-danger" id="btnGuardarGasto">Guardar Gasto</button>
-          <button type="button" class="btn" id="btnCancelarGasto" style="display:none; background:#666;" onclick="cancelarEdicionGasto()">Cancelar Edición</button>
+    <!-- 2. PESTAÑA VIAJES -->
+    <section id="sec-viajes" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-amber-400"></i> Registrar Nuevo Viaje / Flete
+        </h2>
+        <form id="formViaje" onsubmit="saveViaje(event)" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Cliente</label>
+              <input type="text" id="vCliente" required placeholder="Nombre del cliente" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto del Flete ($)</label>
+              <input type="number" id="vMonto" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Origen</label>
+              <input type="text" id="vOrigen" required placeholder="Lugar de origen" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Destino</label>
+              <input type="text" id="vDestino" required placeholder="Lugar de destino" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha</label>
+              <input type="date" id="vFecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Detalles / Carga</label>
+              <input type="text" id="vDetalle" placeholder="Ej: Carga general, 500kg" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Viaje
+          </button>
         </form>
       </div>
 
-      <div class="card-title" style="margin-top:20px;">Historial de Gastos</div>
-      <div id="listaGastos">Cargando gastos...</div>
-    </div>
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
+        <h3 class="text-md font-bold text-slate-200 mb-3">Lista de Viajes Registrados</h3>
+        <div id="viajesList" class="space-y-3">
+          <p class="text-slate-400 text-sm italic">Cargando viajes...</p>
+        </div>
+      </div>
+    </section>
 
-    <!-- TAB RESUMEN -->
-    <div id="resumen" class="tab-content">
-      <div id="listaResumen">Cargando datos...</div>
-    </div>
+    <!-- 3. PESTAÑA INGRESOS -->
+    <section id="sec-ingresos" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-emerald-400"></i> Registrar Otro Ingreso
+        </h2>
+        <form id="formIngreso" onsubmit="saveIngreso(event)" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Concepto / Motivo</label>
+              <input type="text" id="iConcepto" required placeholder="Ej: Cobro adicional, propina, venta" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto ($)</label>
+              <input type="number" id="iMonto" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha</label>
+              <input type="date" id="iFecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-400 focus:outline-none">
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Ingreso
+          </button>
+        </form>
+      </div>
 
-    <div id="mensaje"></div>
-  </div>
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
+        <h3 class="text-md font-bold text-slate-200 mb-3">Otros Ingresos Registrados</h3>
+        <div id="ingresosList" class="space-y-3">
+          <p class="text-slate-400 text-sm italic">Cargando ingresos...</p>
+        </div>
+      </div>
+    </section>
 
+    <!-- 4. PESTAÑA GASTOS -->
+    <section id="sec-gastos" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+        <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-rose-400"></i> Registrar Gasto
+        </h2>
+        <form id="formGasto" onsubmit="saveGasto(event)" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría</label>
+              <select id="gCategoria" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
+                <option value="Combustible">Combustible</option>
+                <option value="Peaje">Peaje</option>
+                <option value="Mantenimiento">Mantenimiento / Repuestos</option>
+                <option value="Comida">Comida / Viáticos</option>
+                <option value="Otros">Otros</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto ($)</label>
+              <input type="number" id="gMonto" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha</label>
+              <input type="date" id="gFecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Descripción / Nota</label>
+              <input type="text" id="gNota" placeholder="Ej: Carga YPF 20L" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Gasto
+          </button>
+        </form>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
+        <h3 class="text-md font-bold text-slate-200 mb-3">Gastos Registrados</h3>
+        <div id="gastosList" class="space-y-3">
+          <p class="text-slate-400 text-sm italic">Cargando gastos...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. PESTAÑA CONFIGURACIÓN -->
+    <section id="sec-config" class="tab-content hidden space-y-6">
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+        <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-amber-400"></i> Estado de Configuración de Firebase
+        </h2>
+        <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-xs font-mono space-y-2 text-slate-300 overflow-x-auto">
+          <p><span class="text-amber-400 font-bold">Proyecto ID:</span> fletes-9c875</p>
+          <p><span class="text-amber-400 font-bold">Database URL:</span> https://fletes-9c875-default-rtdb.firebaseio.com</p>
+          <p><span class="text-amber-400 font-bold">Estado:</span> <span id="configDbStatus" class="text-yellow-400">Comprobando...</span></p>
+        </div>
+        <p class="text-xs text-slate-400">
+          Si experimentas problemas para guardar o sincronizar datos, asegúrate de que las Reglas de Realtime Database en Firebase Console estén configuradas en modo público para lectura/escritura (`".read": true, ".write": true`).
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LÓGICA JAVASCRIPT -->
   <script>
-    document.getElementById('v_fecha').valueAsDate = new Date();
-    document.getElementById('i_fecha').valueAsDate = new Date();
-    document.getElementById('g_fecha').valueAsDate = new Date();
+    // 1. Configuración de Firebase con tus credenciales reales
+    const firebaseConfig = {
+      apiKey: "AIzaSyDGHK8XrH5C3XCKJZXFrBi15AWnQ7ar38",
+      authDomain: "fletes-9c875.firebaseapp.com",
+      databaseURL: "https://fletes-9c875-default-rtdb.firebaseio.com",
+      projectId: "fletes-9c875",
+      storageBucket: "fletes-9c875.firebasestorage.app",
+      messagingSenderId: "326542139919",
+      appId: "1:326542139919:web:706972592d8b3c264f397a"
+    };
 
-    function mostrarMensaje(txt) {
-      const m = document.getElementById('mensaje');
-      m.innerText = txt;
-      m.style.display = 'block';
-      setTimeout(() => { m.style.display = 'none'; }, 4000);
-    }
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    function switchTab(tabId, btn) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      btn.classList.add('active');
-    }
+    // Establecer fecha por defecto en los formularios
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('vFecha').value = today;
+    document.getElementById('iFecha').value = today;
+    document.getElementById('gFecha').value = today;
 
-    function calcularCotizacion() {
-      const km = Number(document.getElementById('c_km').value) || 0;
-      const tarifaKm = Number(document.getElementById('c_tarifaKm').value) || 0;
-      const base = Number(document.getElementById('c_base').value) || 0;
-      const peones = Number(document.getElementById('c_peones').value) || 0;
-      const valPeon = Number(document.getElementById('c_valPeon').value) || 0;
+    // Verificar conexión a la BD
+    db.ref('.info/connected').on('value', (snap) => {
+      const statusEl = document.getElementById('connectionStatus');
+      const configStatusEl = document.getElementById('configDbStatus');
+      if (snap.val() === true) {
+        statusEl.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30";
+        statusEl.innerText = "Conectado";
+        configStatusEl.className = "text-emerald-400 font-bold";
+        configStatusEl.innerText = "Conectado correctamente";
+      } else {
+        statusEl.className = "text-xs px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30";
+        statusEl.innerText = "Desconectado";
+        configStatusEl.className = "text-rose-400 font-bold";
+        configStatusEl.innerText = "Desconectado (Verifica reglas de Firebase)";
+      }
+    });
 
-      const totalKm = km * tarifaKm;
-      const totalPeones = peones * valPeon;
-      const totalFinal = base + totalKm + totalPeones;
-
-      document.getElementById('c_total').innerText = 'Gs. ' + totalFinal.toLocaleString('es-PY');
-      return { totalFinal, km, base, totalKm, peones, totalPeones };
-    }
-
-    function copiarMensajeWA() {
-      const c = calcularCotizacion();
-      const cliente = document.getElementById('c_cliente').value || 'Cliente';
-
-      let texto = `🚚 *PRESUPUESTO DE FLETE*\n`;
-      texto += `👤 *Cliente:* ${cliente}\n`;
-      texto += `-----------------------------------\n`;
-      texto += `• Base fija: Gs. ${c.base.toLocaleString('es-PY')}\n`;
-      texto += `• Recorrido (${c.km} KM): Gs. ${c.totalKm.toLocaleString('es-PY')}\n`;
-      if (c.peones > 0) texto += `• Ayudantes (${c.peones}): Gs. ${c.totalPeones.toLocaleString('es-PY')}\n`;
-      texto += `-----------------------------------\n`;
-      texto += `💰 *TOTAL ESTIMADO: Gs. ${c.totalFinal.toLocaleString('es-PY')}*\n\n`;
-      texto += `_Presupuesto sujeto a confirmación._`;
-
-      navigator.clipboard.writeText(texto).then(() => {
-        mostrarMensaje('📋 ¡Presupuesto copiado para WhatsApp!');
+    // Control de pestañas
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('border-amber-400', 'text-amber-400');
+        el.classList.add('border-transparent', 'text-slate-400');
       });
+
+      document.getElementById(`sec-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabName}`);
+      activeBtn.classList.remove('border-transparent', 'text-slate-400');
+      activeBtn.classList.add('border-amber-400', 'text-amber-400');
     }
 
-    // --- GUARDAR VIAJE EN FIREBASE ---
-    async function guardarV(e) {
+    // Guardar Viaje
+    function saveViaje(e) {
       e.preventDefault();
-      try {
-        await fb.addDoc(fb.collection(db, "viajes"), {
-          idViaje: document.getElementById('v_id').value,
-          fecha: document.getElementById('v_fecha').value,
-          vehiculo: document.getElementById('v_vehiculo').value,
-          chofer: document.getElementById('v_chofer').value,
-          kmInicial: Number(document.getElementById('v_kmIni').value),
-          kmFinal: Number(document.getElementById('v_kmFin').value),
-          origenDestino: document.getElementById('v_origen').value,
-          idPedido: document.getElementById('v_pedido').value,
-          creadoEn: new Date()
-        });
-        mostrarMensaje("✅ Viaje guardado correctamente");
-        document.getElementById('formViaje').reset();
-        document.getElementById('v_fecha').valueAsDate = new Date();
-      } catch (err) {
-        mostrarMensaje("❌ Error al guardar viaje");
-        console.error(err);
-      }
-    }
-
-    // --- GUARDAR INGRESO EN FIREBASE ---
-    async function guardarI(e) {
-      e.preventDefault();
-      try {
-        await fb.addDoc(fb.collection(db, "ingresos"), {
-          idPedido: document.getElementById('i_pedido').value,
-          fecha: document.getElementById('i_fecha').value,
-          cliente: document.getElementById('i_cliente').value,
-          descripcion: document.getElementById('i_desc').value,
-          estado: document.getElementById('i_estado').value,
-          monto: Number(document.getElementById('i_monto').value),
-          creadoEn: new Date()
-        });
-        mostrarMensaje("✅ Ingreso guardado correctamente");
-        document.getElementById('formIngreso').reset();
-        document.getElementById('i_fecha').valueAsDate = new Date();
-      } catch (err) {
-        mostrarMensaje("❌ Error al guardar ingreso");
-        console.error(err);
-      }
-    }
-
-    // --- GUARDAR / EDITAR GASTO EN FIREBASE ---
-    async function guardarG(e) {
-      e.preventDefault();
-      const id = document.getElementById('g_id').value;
-      const datos = {
-        fecha: document.getElementById('g_fecha').value,
-        vehiculo: document.getElementById('g_vehiculo').value,
-        categoria: document.getElementById('g_categoria').value,
-        detalle: document.getElementById('g_detalle').value,
-        monto: Number(document.getElementById('g_monto').value)
+      const viaje = {
+        type: 'viaje',
+        cliente: document.getElementById('vCliente').value,
+        monto: parseFloat(document.getElementById('vMonto').value),
+        origen: document.getElementById('vOrigen').value,
+        destino: document.getElementById('vDestino').value,
+        fecha: document.getElementById('vFecha').value,
+        detalle: document.getElementById('vDetalle').value,
+        timestamp: Date.now()
       };
 
-      try {
-        if (id) {
-          await fb.updateDoc(fb.doc(db, "gastos", id), datos);
-          mostrarMensaje("✅ Gasto actualizado correctamente");
-          cancelarEdicionGasto();
-        } else {
-          datos.creadoEn = new Date();
-          await fb.addDoc(fb.collection(db, "gastos"), datos);
-          mostrarMensaje("✅ Gasto guardado correctamente");
-          document.getElementById('formGasto').reset();
-          document.getElementById('g_fecha').valueAsDate = new Date();
-        }
-        cargarGastos();
-      } catch (err) {
-        mostrarMensaje("❌ Error al guardar gasto");
-        console.error(err);
+      db.ref('viajes').push(viaje).then(() => {
+        alert('¡Viaje guardado con éxito!');
+        document.getElementById('formViaje').reset();
+        document.getElementById('vFecha').value = today;
+      }).catch(err => alert('Error al guardar viaje: ' + err.message));
+    }
+
+    // Guardar Ingreso
+    function saveIngreso(e) {
+      e.preventDefault();
+      const ingreso = {
+        type: 'ingreso',
+        concepto: document.getElementById('iConcepto').value,
+        monto: parseFloat(document.getElementById('iMonto').value),
+        fecha: document.getElementById('iFecha').value,
+        timestamp: Date.now()
+      };
+
+      db.ref('ingresos').push(ingreso).then(() => {
+        alert('¡Ingreso guardado con éxito!');
+        document.getElementById('formIngreso').reset();
+        document.getElementById('iFecha').value = today;
+      }).catch(err => alert('Error al guardar ingreso: ' + err.message));
+    }
+
+    // Guardar Gasto
+    function saveGasto(e) {
+      e.preventDefault();
+      const gasto = {
+        type: 'gasto',
+        categoria: document.getElementById('gCategoria').value,
+        monto: parseFloat(document.getElementById('gMonto').value),
+        fecha: document.getElementById('gFecha').value,
+        nota: document.getElementById('gNota').value,
+        timestamp: Date.now()
+      };
+
+      db.ref('gastos').push(gasto).then(() => {
+        alert('¡Gasto guardado con éxito!');
+        document.getElementById('formGasto').reset();
+        document.getElementById('gFecha').value = today;
+      }).catch(err => alert('Error al guardar gasto: ' + err.message));
+    }
+
+    // Eliminar Registro
+    function deleteItem(path, id) {
+      if (confirm('¿Estás seguro de eliminar este registro?')) {
+        db.ref(`${path}/${id}`).remove();
       }
     }
 
-    // --- CARGAR GASTOS DESDE FIREBASE ---
-    async function cargarGastos() {
-      const cont = document.getElementById('listaGastos');
-      cont.innerHTML = 'Cargando lista de gastos...';
-      try {
-        const q = fb.query(fb.collection(db, "gastos"), fb.orderBy("fecha", "desc"));
-        const snapshot = await fb.getDocs(q);
-        if (snapshot.empty) {
-          cont.innerHTML = '<div class="card">No hay gastos registrados aún.</div>';
-          return;
-        }
-        let html = '';
-        snapshot.forEach(docSnap => {
-          const g = docSnap.data();
-          const docId = docSnap.id;
-          html += `
-            <div class="card">
-              <div class="row"><span style="font-weight:bold;">${g.categoria}</span><span class="val-neg">Gs. ${Number(g.monto).toLocaleString('es-PY')}</span></div>
-              <div style="font-size:12px; color:#666;">${g.fecha} | ${g.detalle}</div>
-              <div style="margin-top:8px;">
-                <button class="btn btn-small" style="background:var(--app-color);" onclick='prepararEdicionGasto("${docId}", ${JSON.stringify(g)})'>✏️ Editar</button>
-                <button class="btn btn-small btn-danger" onclick="borrarGasto('${docId}')">🗑️ Borrar</button>
+    // Escuchar datos en tiempo real
+    let globalViajes = {};
+    let globalIngresos = {};
+    let globalGastos = {};
+
+    function updateAllViews() {
+      let sumIngresos = 0;
+      let sumGastos = 0;
+      let allRecords = [];
+
+      // Render Viajes
+      const viajesList = document.getElementById('viajesList');
+      if (Object.keys(globalViajes).length === 0) {
+        viajesList.innerHTML = '<p class="text-slate-400 text-sm italic">No hay viajes registrados.</p>';
+      } else {
+        viajesList.innerHTML = '';
+        Object.entries(globalViajes).forEach(([id, item]) => {
+          sumIngresos += item.monto || 0;
+          allRecords.push({...item, id, refPath: 'viajes'});
+          viajesList.innerHTML += `
+            <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
+              <div>
+                <p class="font-bold text-slate-100">${item.cliente} <span class="text-xs text-amber-400 font-mono">($${item.monto})</span></p>
+                <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot"></i> ${item.origen} ➔ ${item.destino}</p>
+                <p class="text-xs text-slate-500">${item.fecha} ${item.detalle ? '| ' + item.detalle : ''}</p>
               </div>
+              <button onclick="deleteItem('viajes', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
             </div>
           `;
         });
-        cont.innerHTML = html;
-      } catch (err) {
-        cont.innerHTML = '<div class="card">Error al cargar gastos.</div>';
-        console.error(err);
       }
-    }
 
-    async function borrarGasto(docId) {
-      if (confirm('¿Seguro que deseas eliminar este gasto?')) {
-        try {
-          await fb.deleteDoc(fb.doc(db, "gastos", docId));
-          mostrarMensaje("🗑️ Gasto eliminado");
-          cargarGastos();
-        } catch (err) {
-          mostrarMensaje("❌ Error al eliminar");
-        }
-      }
-    }
-
-    function prepararEdicionGasto(docId, g) {
-      document.getElementById('g_id').value = docId;
-      document.getElementById('g_fecha').value = g.fecha;
-      document.getElementById('g_vehiculo').value = g.vehiculo;
-      document.getElementById('g_categoria').value = g.categoria;
-      document.getElementById('g_detalle').value = g.detalle;
-      document.getElementById('g_monto').value = g.monto;
-
-      document.getElementById('gastoFormTitle').innerText = '✏️ Editar Gasto';
-      document.getElementById('btnGuardarGasto').innerText = 'Actualizar Gasto';
-      document.getElementById('btnCancelarGasto').style.display = 'block';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function cancelarEdicionGasto() {
-      document.getElementById('g_id').value = '';
-      document.getElementById('formGasto').reset();
-      document.getElementById('g_fecha').valueAsDate = new Date();
-      document.getElementById('gastoFormTitle').innerText = 'Registrar Nuevo Gasto';
-      document.getElementById('btnGuardarGasto').innerText = 'Guardar Gasto';
-      document.getElementById('btnCancelarGasto').style.display = 'none';
-    }
-
-    // --- CARGAR RESUMEN MENSUAL ---
-    async function cargarResumen() {
-      const cont = document.getElementById('listaResumen');
-      cont.innerHTML = 'Calculando ganancias...';
-      try {
-        const snapshotIng = await fb.getDocs(fb.collection(db, "ingresos"));
-        const snapshotGas = await fb.getDocs(fb.collection(db, "gastos"));
-
-        let resumen = {};
-
-        snapshotIng.forEach(doc => {
-          const d = doc.data();
-          if (d.estado === 'Cobrado') {
-            const mes = d.fecha.substring(0, 7); // AAAA-MM
-            if (!resumen[mes]) resumen[mes] = { ingresos: 0, gastos: 0 };
-            resumen[mes].ingresos += Number(d.monto) || 0;
-          }
-        });
-
-        snapshotGas.forEach(doc => {
-          const d = doc.data();
-          const mes = d.fecha.substring(0, 7);
-          if (!resumen[mes]) resumen[mes] = { ingresos: 0, gastos: 0 };
-          resumen[mes].gastos += Number(d.monto) || 0;
-        });
-
-        const mesesOrdenados = Object.keys(resumen).sort().reverse();
-
-        if (mesesOrdenados.length === 0) {
-          cont.innerHTML = '<div class="card">No hay registros cargados aún.</div>';
-          return;
-        }
-
-        let html = '';
-        mesesOrdenados.forEach(mes => {
-          const ing = resumen[mes].ingresos;
-          const gas = resumen[mes].gastos;
-          const gan = ing - gas;
-          html += `
-            <div class="card">
-              <div class="card-title">Mes: ${mes}</div>
-              <div class="row"><span>Ingresos Cobrados:</span><span class="val-pos">Gs. ${ing.toLocaleString('es-PY')}</span></div>
-              <div class="row"><span>Gastos Totales:</span><span class="val-neg">Gs. ${gas.toLocaleString('es-PY')}</span></div>
-              <hr style="border:0; border-top:1px solid #eee; margin:8px 0;">
-              <div class="row" style="font-size:16px;"><span>Ganancia Neta:</span><span class="${gan >= 0 ? 'val-pos' : 'val-neg'}">Gs. ${gan.toLocaleString('es-PY')}</span></div>
+      // Render Ingresos
+      const ingresosList = document.getElementById('ingresosList');
+      if (Object.keys(globalIngresos).length === 0) {
+        ingresosList.innerHTML = '<p class="text-slate-400 text-sm italic">No hay otros ingresos registrados.</p>';
+      } else {
+        ingresosList.innerHTML = '';
+        Object.entries(globalIngresos).forEach(([id, item]) => {
+          sumIngresos += item.monto || 0;
+          allRecords.push({...item, id, refPath: 'ingresos'});
+          ingresosList.innerHTML += `
+            <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
+              <div>
+                <p class="font-bold text-slate-100">${item.concepto} <span class="text-xs text-emerald-400 font-mono">($${item.monto})</span></p>
+                <p class="text-xs text-slate-500">${item.fecha}</p>
+              </div>
+              <button onclick="deleteItem('ingresos', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
             </div>
           `;
         });
-        cont.innerHTML = html;
-      } catch (err) {
-        cont.innerHTML = '<div class="card">Error al cargar resumen.</div>';
-        console.error(err);
+      }
+
+      // Render Gastos
+      const gastosList = document.getElementById('gastosList');
+      if (Object.keys(globalGastos).length === 0) {
+        gastosList.innerHTML = '<p class="text-slate-400 text-sm italic">No hay gastos registrados.</p>';
+      } else {
+        gastosList.innerHTML = '';
+        Object.entries(globalGastos).forEach(([id, item]) => {
+          sumGastos += item.monto || 0;
+          allRecords.push({...item, id, refPath: 'gastos'});
+          gastosList.innerHTML += `
+            <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
+              <div>
+                <p class="font-bold text-slate-100">${item.categoria} <span class="text-xs text-rose-400 font-mono">($${item.monto})</span></p>
+                <p class="text-xs text-slate-400">${item.nota || ''}</p>
+                <p class="text-xs text-slate-500">${item.fecha}</p>
+              </div>
+              <button onclick="deleteItem('gastos', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          `;
+        });
+      }
+
+      // Actualizar Totales del Resumen
+      document.getElementById('totalIngresos').innerText = `$${sumIngresos.toLocaleString()}`;
+      document.getElementById('totalGastos').innerText = `$${sumGastos.toLocaleString()}`;
+      const balance = sumIngresos - sumGastos;
+      const balanceEl = document.getElementById('totalBalance');
+      balanceEl.innerText = `$${balance.toLocaleString()}`;
+      balanceEl.className = `text-2xl font-extrabold mt-1 ${balance >= 0 ? 'text-amber-400' : 'text-rose-500'}`;
+
+      // Historial Reciente
+      const historyList = document.getElementById('recentHistoryList');
+      if (allRecords.length === 0) {
+        historyList.innerHTML = '<p class="text-slate-400 text-sm italic">No hay actividad reciente.</p>';
+      } else {
+        allRecords.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        historyList.innerHTML = '';
+        allRecords.slice(0, 5).forEach(rec => {
+          const isGasto = rec.type === 'gasto';
+          historyList.innerHTML += `
+            <div class="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-lg border border-slate-800 text-xs">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid ${isGasto ? 'fa-arrow-down text-rose-400' : 'fa-arrow-up text-emerald-400'}"></i>
+                <div>
+                  <p class="font-semibold text-slate-200">${rec.cliente || rec.concepto || rec.categoria}</p>
+                  <p class="text-slate-500">${rec.fecha}</p>
+                </div>
+              </div>
+              <span class="font-mono font-bold ${isGasto ? 'text-rose-400' : 'text-emerald-400'}">
+                ${isGasto ? '-' : '+'}$${rec.monto}
+              </span>
+            </div>
+          `;
+        });
       }
     }
 
-    calcularCotizacion();
+    // Escuchadores de Firebase
+    db.ref('viajes').on('value', snap => {
+      globalViajes = snap.val() || {};
+      updateAllViews();
+    });
+
+    db.ref('ingresos').on('value', snap => {
+      globalIngresos = snap.val() || {};
+      updateAllViews();
+    });
+
+    db.ref('gastos').on('value', snap => {
+      globalGastos = snap.val() || {};
+      updateAllViews();
+    });
   </script>
 </body>
 </html>
