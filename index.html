@@ -6,9 +6,11 @@
   <title>Fletes</title>
 
   <!-- Iconos de la App (Favicon / App Icon) -->
-  <link rel="icon" type="image/png" href="logo.png">
-  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="icon" type="image/png" href="favicon-32.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f59e0b">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
@@ -373,7 +375,7 @@
     const firebaseConfig = {
       apiKey: "AIzaSyDGHK8XrH5C3XCKJZXFrBi15AWnQ7ar38",
       authDomain: "fletes-9c875.firebaseapp.com",
-      databaseURL: "https://fletes-9c875-default-rtdb.firebaseio.com/",
+      databaseURL: "https://fletes-9c875-default-rtdb.firebaseio.com",
       projectId: "fletes-9c875",
       storageBucket: "fletes-9c875.firebasestorage.app",
       messagingSenderId: "326542139919",
@@ -838,6 +840,11 @@
 
     function recargarApp() {
       window.location.reload();
+    }
+  </script>
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', ()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
     }
   </script>
 </body>
