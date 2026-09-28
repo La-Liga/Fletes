@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRM Fletes</title>
+  <title>Fletes</title>
+
+  <!-- Iconos de la App (Favicon / App Icon) -->
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
@@ -12,14 +17,28 @@
   <!-- Firebase JS SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    /* Temas de Color Dinámicos */
+    .theme-amber { --accent-color: #f59e0b; --accent-hover: #d97706; --accent-text: #fbbf24; }
+    .theme-blue { --accent-color: #3b82f6; --accent-hover: #2563eb; --accent-text: #60a5fa; }
+    .theme-emerald { --accent-color: #10b981; --accent-hover: #059669; --accent-text: #34d399; }
+    .theme-purple { --accent-color: #8b5cf6; --accent-hover: #7c3aed; --accent-text: #a78bfa; }
+    .theme-rose { --accent-color: #f43f5e; --accent-hover: #e11d48; --accent-text: #fb7185; }
+
+    .btn-accent { background-color: var(--accent-color); color: #0f172a; }
+    .btn-accent:hover { background-color: var(--accent-hover); }
+    .text-accent { color: var(--accent-text); }
+    .border-accent { border-color: var(--accent-color); }
+  </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+<body id="appBody" class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans theme-amber">
 
   <!-- Encabezado -->
   <header class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50 shadow-md">
     <div class="max-w-4xl mx-auto flex justify-between items-center">
-      <h1 class="text-xl font-bold text-amber-400 flex items-center gap-2">
-        <i class="fa-solid fa-truck-fast"></i> CRM Fletes
+      <h1 class="text-xl font-bold text-accent flex items-center gap-2">
+        <i class="fa-solid fa-truck-fast"></i> <span id="appTitle">Fletes</span>
       </h1>
       <span id="connectionStatus" class="text-xs px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 font-semibold border border-yellow-500/30">
         Conectando...
@@ -30,14 +49,17 @@
   <!-- Navegación por Pestañas -->
   <nav class="bg-slate-800/80 border-b border-slate-700 sticky top-14 z-40 backdrop-blur-md">
     <div class="max-w-4xl mx-auto flex overflow-x-auto text-sm">
-      <button onclick="switchTab('cotizar')" id="tab-cotizar" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-amber-400 text-amber-400 whitespace-nowrap">
+      <button onclick="switchTab('resumen')" id="tab-resumen" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-accent text-accent whitespace-nowrap">
+        <i class="fa-solid fa-chart-line"></i> Resumen
+      </button>
+      <button onclick="switchTab('cotizar')" id="tab-cotizar" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
         <i class="fa-solid fa-calculator"></i> Cotizar
       </button>
       <button onclick="switchTab('viajes')" id="tab-viajes" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
         <i class="fa-solid fa-route"></i> Viajes
       </button>
-      <button onclick="switchTab('ingresos')" id="tab-ingresos" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
-        <i class="fa-solid fa-hand-holding-dollar"></i> Ingresos
+      <button onclick="switchTab('pendientes')" id="tab-pendientes" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
+        <i class="fa-solid fa-clock-rotate-left"></i> Pendientes
       </button>
       <button onclick="switchTab('gastos')" id="tab-gastos" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
         <i class="fa-solid fa-receipt"></i> Gastos
@@ -51,11 +73,66 @@
   <!-- Contenido Principal -->
   <main class="flex-1 max-w-4xl w-full mx-auto p-4 space-y-6">
 
-    <!-- 1. PESTAÑA COTIZAR -->
-    <section id="sec-cotizar" class="tab-content space-y-6">
+    <!-- 1. PESTAÑA RESUMEN -->
+    <section id="sec-resumen" class="tab-content space-y-6">
+      <!-- Tarjetas de Métricas -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Total Ingresos</p>
+          <p id="resumenIngresos" class="text-3xl font-extrabold text-emerald-400 mt-2">$0</p>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Total Gastos</p>
+          <p id="resumenGastos" class="text-3xl font-extrabold text-rose-400 mt-2">$0</p>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Balance Neto</p>
+          <p id="resumenBalance" class="text-3xl font-extrabold text-accent mt-2">$0</p>
+        </div>
+      </div>
+
+      <!-- Tarjeta de Control de Kilometraje / Mantenimiento -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-3">
+        <h2 class="text-md font-bold text-slate-200 flex items-center justify-between">
+          <span class="flex items-center gap-2"><i class="fa-solid fa-gauge-high text-accent"></i> Estado del Vehículo / Odómetro</span>
+          <span id="badgeMantenimiento" class="text-xs px-2 py-0.5 rounded-full font-bold bg-slate-700 text-slate-300">Sin Configurar</span>
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-sm">
+          <div>
+            <p class="text-xs text-slate-400">Odómetro Actual:</p>
+            <p id="resumenKmActual" class="text-xl font-bold text-slate-100 font-mono">0 km</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400">Próximo Service (Km):</p>
+            <p id="resumenKmProximo" class="text-xl font-bold text-slate-100 font-mono">0 km</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-400">Km Restantes:</p>
+            <p id="resumenKmRestantes" class="text-xl font-bold text-emerald-400 font-mono">0 km</p>
+          </div>
+        </div>
+        <!-- Barra de Progreso Mantenimiento -->
+        <div class="w-full bg-slate-700 h-2.5 rounded-full overflow-hidden mt-2">
+          <div id="barMantenimiento" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Historial Reciente -->
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-3">
+        <h2 class="text-md font-bold text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-accent"></i> Historial Reciente
+        </h2>
+        <div id="historialRecienteList" class="space-y-3">
+          <p class="text-slate-400 text-sm italic">No hay actividad reciente.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. PESTAÑA COTIZAR -->
+    <section id="sec-cotizar" class="tab-content hidden space-y-6">
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
         <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-calculator text-amber-400"></i> Cotizador de Flete
+          <i class="fa-solid fa-calculator text-accent"></i> Cotizador de Flete
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -76,25 +153,26 @@
           </div>
         </div>
 
-        <div class="mt-6 p-4 bg-slate-900/90 border border-slate-700 rounded-lg flex justify-between items-center">
+        <div class="mt-6 p-4 bg-slate-900/90 border border-slate-700 rounded-lg flex justify-between items-center flex-wrap gap-4">
           <div>
             <p class="text-xs text-slate-400 uppercase font-bold">Total Cotizado</p>
-            <p id="cTotal" class="text-2xl font-extrabold text-amber-400">$0</p>
+            <p id="cTotal" class="text-2xl font-extrabold text-accent">$0</p>
           </div>
-          <button onclick="copiarCotizacion()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2">
+          <button onclick="copiarCotizacion()" class="btn-accent px-4 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2">
             <i class="fa-solid fa-copy"></i> Copiar Cotización
           </button>
         </div>
       </div>
     </section>
 
-    <!-- 2. PESTAÑA VIAJES -->
+    <!-- 3. PESTAÑA VIAJES -->
     <section id="sec-viajes" class="tab-content hidden space-y-6">
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
-        <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-plus-circle text-amber-400"></i> Registrar Nuevo Viaje / Flete
+        <h2 id="viajeFormTitle" class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-accent"></i> Registrar Nuevo Viaje / Flete
         </h2>
         <form id="formViaje" onsubmit="saveViaje(event)" class="space-y-4">
+          <input type="hidden" id="vEditId">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Cliente</label>
@@ -112,71 +190,77 @@
               <label class="block text-xs font-semibold text-slate-300 mb-1">Destino</label>
               <input type="text" id="vDestino" required placeholder="Destino" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
+            
+            <!-- Controles de Kilometraje del Viaje -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Odómetro Inicial (Km) <span class="text-slate-500 font-normal">(Opcional)</span></label>
+              <input type="number" id="vKmInicial" oninput="calcKmViaje()" placeholder="Ej: 125000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Odómetro Final (Km) <span class="text-slate-500 font-normal">(Opcional)</span></label>
+              <input type="number" id="vKmFinal" oninput="calcKmViaje()" placeholder="Ej: 125240" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div class="md:col-span-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-700 flex justify-between items-center">
+              <span class="text-xs text-slate-400">Distancia Recorrida Calculada:</span>
+              <span id="vKmCalculados" class="text-sm font-bold text-accent font-mono">0 km</span>
+            </div>
+
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha</label>
               <input type="date" id="vFecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Detalle</label>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Estado de Pago</label>
+              <select id="vEstado" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+                <option value="cobrado">Cobrado / Pagado</option>
+                <option value="pendiente">Pendiente de Pago</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Detalle / Observaciones</label>
               <input type="text" id="vDetalle" placeholder="Observaciones" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
           </div>
-          <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-floppy-disk"></i> Guardar Viaje
-          </button>
+          <div class="flex gap-2">
+            <button type="submit" class="flex-1 btn-accent font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar Viaje
+            </button>
+            <button type="button" id="cancelEditViajeBtn" onclick="resetFormViaje()" class="hidden bg-slate-700 hover:bg-slate-600 px-4 py-3 rounded-lg font-bold text-sm">
+              Cancelar
+            </button>
+          </div>
         </form>
       </div>
 
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
-        <h3 class="text-md font-bold text-slate-200 mb-3">Historial de Viajes</h3>
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg space-y-3">
+        <h3 class="text-md font-bold text-slate-200">Historial de Viajes</h3>
         <div id="viajesList" class="space-y-3">
           <p class="text-slate-400 text-sm italic">Cargando...</p>
         </div>
       </div>
     </section>
 
-    <!-- 3. PESTAÑA INGRESOS -->
-    <section id="sec-ingresos" class="tab-content hidden space-y-6">
+    <!-- 4. PESTAÑA PENDIENTES -->
+    <section id="sec-pendientes" class="tab-content hidden space-y-6">
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
-        <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-plus-circle text-emerald-400"></i> Registrar Ingreso Extra
+        <h2 class="text-lg font-bold text-slate-200 mb-2 flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Pagos Pendientes por Cobrar
         </h2>
-        <form id="formIngreso" onsubmit="saveIngreso(event)" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Concepto</label>
-              <input type="text" id="iConcepto" required placeholder="Ej: Adicional, Cobro previo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-400 focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto ($)</label>
-              <input type="number" id="iMonto" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-400 focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha</label>
-              <input type="date" id="iFecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-400 focus:outline-none">
-            </div>
-          </div>
-          <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-floppy-disk"></i> Guardar Ingreso
-          </button>
-        </form>
-      </div>
-
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
-        <h3 class="text-md font-bold text-slate-200 mb-3">Historial de Ingresos</h3>
-        <div id="ingresosList" class="space-y-3">
+        <p class="text-xs text-slate-400 mb-4">Aquí se listan automáticamente todos los viajes guardados con estado "Pendiente".</p>
+        <div id="pendientesList" class="space-y-3">
           <p class="text-slate-400 text-sm italic">Cargando...</p>
         </div>
       </div>
     </section>
 
-    <!-- 4. PESTAÑA GASTOS -->
+    <!-- 5. PESTAÑA GASTOS -->
     <section id="sec-gastos" class="tab-content hidden space-y-6">
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
-        <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
+        <h2 id="gastoFormTitle" class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
           <i class="fa-solid fa-plus-circle text-rose-400"></i> Registrar Gasto
         </h2>
         <form id="formGasto" onsubmit="saveGasto(event)" class="space-y-4">
+          <input type="hidden" id="gEditId">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría</label>
@@ -197,34 +281,87 @@
               <input type="date" id="gFecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Nota</label>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Nota / Observaciones</label>
               <input type="text" id="gNota" placeholder="Observaciones" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
             </div>
           </div>
-          <button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
-            <i class="fa-solid fa-floppy-disk"></i> Guardar Gasto
-          </button>
+          <div class="flex gap-2">
+            <button type="submit" class="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar Gasto
+            </button>
+            <button type="button" id="cancelEditGastoBtn" onclick="resetFormGasto()" class="hidden bg-slate-700 hover:bg-slate-600 px-4 py-3 rounded-lg font-bold text-sm">
+              Cancelar
+            </button>
+          </div>
         </form>
       </div>
 
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
-        <h3 class="text-md font-bold text-slate-200 mb-3">Historial de Gastos</h3>
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg space-y-3">
+        <h3 class="text-md font-bold text-slate-200">Historial de Gastos</h3>
         <div id="gastosList" class="space-y-3">
           <p class="text-slate-400 text-sm italic">Cargando...</p>
         </div>
       </div>
     </section>
 
-    <!-- 5. PESTAÑA CONFIGURACIÓN -->
+    <!-- 6. PESTAÑA CONFIGURACIÓN -->
     <section id="sec-config" class="tab-content hidden space-y-6">
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-5">
         <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-amber-400"></i> Estado de Configuración
+          <i class="fa-solid fa-sliders text-accent"></i> Ajustes y Personalización
         </h2>
-        <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-xs font-mono space-y-2 text-slate-300 overflow-x-auto">
-          <p><span class="text-amber-400 font-bold">Proyecto ID:</span> fletes-9c875</p>
-          <p><span class="text-amber-400 font-bold">Database URL:</span> https://fletes-9c875-default-rtdb.firebaseio.com</p>
-          <p><span class="text-amber-400 font-bold">Estado Conexión:</span> <span id="configDbStatus" class="text-yellow-400">Comprobando...</span></p>
+        
+        <form onsubmit="saveConfig(event)" class="space-y-4 border-b border-slate-700 pb-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre de la Aplicación / Negocio</label>
+              <input type="text" id="cfgNombre" placeholder="Fletes" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Teléfono de Contacto</label>
+              <input type="text" id="cfgTelefono" placeholder="Ej: +54 9 11 1234-5678" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Cuenta Bancaria / CBU / Alias</label>
+              <input type="text" id="cfgCuenta" placeholder="Alias / CBU" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            
+            <!-- Ajustes de Kilometraje y Service -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Odómetro Actual del Vehículo (Km)</label>
+              <input type="number" id="cfgKmActual" placeholder="Ej: 125000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Próximo Service (Km)</label>
+              <input type="number" id="cfgKmProximo" placeholder="Ej: 130000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Tema / Color Principal</label>
+              <select id="cfgTema" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+                <option value="theme-amber">Ámbar (Original)</option>
+                <option value="theme-blue">Azul</option>
+                <option value="theme-emerald">Verde Esmeralda</option>
+                <option value="theme-purple">Violeta</option>
+                <option value="theme-rose">Rojo / Rosa</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-accent font-bold py-2.5 px-5 rounded-lg text-sm w-full transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Ajustes
+          </button>
+        </form>
+
+        <div class="space-y-3">
+          <h3 class="text-sm font-bold text-slate-300">Pruebas de Base de Datos:</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button onclick="probarConexion()" class="bg-slate-700 hover:bg-slate-600 text-slate-100 font-semibold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2 border border-slate-600">
+              <i class="fa-solid fa-plug"></i> Probar Conexión
+            </button>
+            <button onclick="recargarApp()" class="bg-slate-700 hover:bg-slate-600 text-slate-100 font-semibold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-2 border border-slate-600">
+              <i class="fa-solid fa-rotate"></i> Recargar Aplicación
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -233,7 +370,6 @@
 
   <!-- LÓGICA JAVASCRIPT -->
   <script>
-    // Configuración Firebase del usuario
     const firebaseConfig = {
       apiKey: "AIzaSyDGHK8XrH5C3XCKJZXFrBi15AWnQ7ar38",
       authDomain: "fletes-9c875.firebaseapp.com",
@@ -247,26 +383,23 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Fecha predeterminada
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('vFecha').value = today;
-    document.getElementById('iFecha').value = today;
     document.getElementById('gFecha').value = today;
+
+    let globalViajes = {};
+    let globalGastos = {};
+    let globalConfig = {};
 
     // Estado Conexión
     db.ref('.info/connected').on('value', (snap) => {
       const statusEl = document.getElementById('connectionStatus');
-      const configStatusEl = document.getElementById('configDbStatus');
       if (snap.val() === true) {
         statusEl.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30";
         statusEl.innerText = "Conectado";
-        configStatusEl.className = "text-emerald-400 font-bold";
-        configStatusEl.innerText = "Conectado a Firebase";
       } else {
         statusEl.className = "text-xs px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30";
         statusEl.innerText = "Desconectado";
-        configStatusEl.className = "text-rose-400 font-bold";
-        configStatusEl.innerText = "Desconectado";
       }
     });
 
@@ -274,14 +407,14 @@
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(el => {
-        el.classList.remove('border-amber-400', 'text-amber-400');
+        el.classList.remove('border-accent', 'text-accent');
         el.classList.add('border-transparent', 'text-slate-400');
       });
 
       document.getElementById(`sec-${tabName}`).classList.remove('hidden');
       const activeBtn = document.getElementById(`tab-${tabName}`);
       activeBtn.classList.remove('border-transparent', 'text-slate-400');
-      activeBtn.classList.add('border-amber-400', 'text-amber-400');
+      activeBtn.classList.add('border-accent', 'text-accent');
     }
 
     // Calculadora Cotización
@@ -298,48 +431,227 @@
     function copiarCotizacion() {
       const total = document.getElementById('cTotal').innerText;
       const km = document.getElementById('cKm').value || 0;
-      const texto = `Cotización de Flete:\n- Distancia: ${km} km\n- Total: ${total}`;
-      navigator.clipboard.writeText(texto).then(() => {
-        alert('¡Cotización copiada al portapapeles!');
+      const cuenta = document.getElementById('cfgCuenta').value;
+      const telefono = document.getElementById('cfgTelefono').value;
+
+      let texto = `Cotización de Flete:\n- Distancia: ${km} km\n- Total: ${total}`;
+      if (telefono) texto += `\n- Contacto: ${telefono}`;
+      if (cuenta) texto += `\n- Cuenta/Alias: ${cuenta}`;
+
+      navigator.clipboard.writeText(texto).then(() => alert('¡Cotización copiada al portapapeles!'));
+    }
+
+    // Calcular Km del Viaje en Formulario
+    function calcKmViaje() {
+      const init = parseFloat(document.getElementById('vKmInicial').value) || 0;
+      const fin = parseFloat(document.getElementById('vKmFinal').value) || 0;
+      const calcEl = document.getElementById('vKmCalculados');
+
+      if (fin > 0 && init > 0) {
+        if (fin >= init) {
+          const diff = fin - init;
+          calcEl.innerText = `${diff.toLocaleString()} km`;
+          calcEl.className = "text-sm font-bold text-emerald-400 font-mono";
+        } else {
+          calcEl.innerText = "Error: El km final debe ser mayor al inicial";
+          calcEl.className = "text-xs font-bold text-rose-400 font-mono";
+        }
+      } else {
+        calcEl.innerText = "0 km";
+        calcEl.className = "text-sm font-bold text-accent font-mono";
+      }
+    }
+
+    // Actualizar Métrica, Odómetro y Resumen
+    function updateResumen() {
+      let totalIngresos = 0;
+      let totalGastos = 0;
+      let actividades = [];
+
+      Object.entries(globalViajes).forEach(([id, v]) => {
+        if (v.estado === 'cobrado') {
+          totalIngresos += parseFloat(v.monto || 0);
+        }
+        actividades.push({
+          tipo: 'viaje',
+          fecha: v.fecha,
+          titulo: `Viaje - ${v.cliente}`,
+          sub: `${v.origen} ➔ ${v.destino} ${v.kmRecorridos ? ' (' + v.kmRecorridos + ' km)' : ''}`,
+          monto: v.monto,
+          estado: v.estado,
+          timestamp: v.timestamp || 0
+        });
+      });
+
+      Object.entries(globalGastos).forEach(([id, g]) => {
+        totalGastos += parseFloat(g.monto || 0);
+        actividades.push({
+          tipo: 'gasto',
+          fecha: g.fecha,
+          titulo: `Gasto - ${g.categoria}`,
+          sub: g.nota || '',
+          monto: g.monto,
+          timestamp: g.timestamp || 0
+        });
+      });
+
+      const balance = totalIngresos - totalGastos;
+
+      document.getElementById('resumenIngresos').innerText = `$${totalIngresos.toLocaleString()}`;
+      document.getElementById('resumenGastos').innerText = `$${totalGastos.toLocaleString()}`;
+      document.getElementById('resumenBalance').innerText = `$${balance.toLocaleString()}`;
+
+      // Odómetro y Mantenimiento
+      const kmActual = parseFloat(globalConfig.kmActual || 0);
+      const kmProximo = parseFloat(globalConfig.kmProximo || 0);
+
+      document.getElementById('resumenKmActual').innerText = `${kmActual.toLocaleString()} km`;
+      document.getElementById('resumenKmProximo').innerText = kmProximo > 0 ? `${kmProximo.toLocaleString()} km` : 'Sin definir';
+
+      const badgeEl = document.getElementById('badgeMantenimiento');
+      const restEl = document.getElementById('resumenKmRestantes');
+      const barEl = document.getElementById('barMantenimiento');
+
+      if (kmProximo > 0) {
+        const restantes = kmProximo - kmActual;
+        restEl.innerText = `${restantes.toLocaleString()} km`;
+
+        if (restantes <= 0) {
+          badgeEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30";
+          badgeEl.innerText = "¡MANTENIMIENTO VENCIDO!";
+          restEl.className = "text-xl font-bold text-rose-400 font-mono";
+          barEl.style.width = "100%";
+          barEl.className = "bg-rose-500 h-2.5 rounded-full transition-all duration-300";
+        } else if (restantes <= 1000) {
+          badgeEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+          badgeEl.innerText = "PRÓXIMO SERVICE PRONTO";
+          restEl.className = "text-xl font-bold text-amber-400 font-mono";
+          
+          const pct = Math.min(100, Math.max(0, (kmActual / kmProximo) * 100));
+          barEl.style.width = `${pct}%`;
+          barEl.className = "bg-amber-500 h-2.5 rounded-full transition-all duration-300";
+        } else {
+          badgeEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+          badgeEl.innerText = "AL DÍA";
+          restEl.className = "text-xl font-bold text-emerald-400 font-mono";
+
+          const pct = Math.min(100, Math.max(0, (kmActual / kmProximo) * 100));
+          barEl.style.width = `${pct}%`;
+          barEl.className = "bg-emerald-500 h-2.5 rounded-full transition-all duration-300";
+        }
+      } else {
+        badgeEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-slate-700 text-slate-300";
+        badgeEl.innerText = "Sin Configurar";
+        restEl.innerText = "0 km";
+        barEl.style.width = "0%";
+      }
+
+      // Ordenar actividades recientes por fecha/timestamp
+      actividades.sort((a, b) => b.timestamp - a.timestamp);
+
+      const listEl = document.getElementById('historialRecienteList');
+      if (actividades.length === 0) {
+        listEl.innerHTML = '<p class="text-slate-400 text-sm italic">No hay actividad reciente.</p>';
+        return;
+      }
+
+      listEl.innerHTML = '';
+      actividades.slice(0, 5).forEach(act => {
+        const isViaje = act.tipo === 'viaje';
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
+        card.innerHTML = `
+          <div>
+            <p class="font-bold text-slate-100">${act.titulo}</p>
+            <p class="text-xs text-slate-400">${act.sub}</p>
+            <p class="text-xs text-slate-500">${act.fecha}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-bold ${isViaje ? 'text-emerald-400' : 'text-rose-400'} font-mono">
+              ${isViaje ? '+' : '-'}$${act.monto}
+            </p>
+          </div>`;
+        listEl.appendChild(card);
       });
     }
 
-    // Guardar en Firebase
+    // Guardar / Editar Viaje
     function saveViaje(e) {
       e.preventDefault();
+      const editId = document.getElementById('vEditId').value;
+      const kmInit = parseFloat(document.getElementById('vKmInicial').value) || 0;
+      const kmFin = parseFloat(document.getElementById('vKmFinal').value) || 0;
+      const kmRec = (kmFin >= kmInit && kmFin > 0 && kmInit > 0) ? (kmFin - kmInit) : 0;
+
       const viaje = {
         cliente: document.getElementById('vCliente').value,
         monto: parseFloat(document.getElementById('vMonto').value),
         origen: document.getElementById('vOrigen').value,
         destino: document.getElementById('vDestino').value,
+        kmInicial: kmInit,
+        kmFinal: kmFin,
+        kmRecorridos: kmRec,
         fecha: document.getElementById('vFecha').value,
+        estado: document.getElementById('vEstado').value,
         detalle: document.getElementById('vDetalle').value,
         timestamp: Date.now()
       };
-      db.ref('viajes').push(viaje).then(() => {
-        alert('¡Viaje guardado!');
-        document.getElementById('formViaje').reset();
-        document.getElementById('vFecha').value = today;
-      }).catch(err => alert('Error: ' + err.message));
+
+      // Si se ingresó un kmFinal mayor al Odómetro Actual registrado en Configuración, actualizar el Odómetro
+      if (kmFin > parseFloat(globalConfig.kmActual || 0)) {
+        db.ref('config').update({ kmActual: kmFin });
+      }
+
+      if (editId) {
+        db.ref(`viajes/${editId}`).update(viaje).then(() => {
+          alert('¡Viaje actualizado!');
+          resetFormViaje();
+        });
+      } else {
+        db.ref('viajes').push(viaje).then(() => {
+          alert('¡Viaje guardado!');
+          resetFormViaje();
+        });
+      }
     }
 
-    function saveIngreso(e) {
-      e.preventDefault();
-      const ingreso = {
-        concepto: document.getElementById('iConcepto').value,
-        monto: parseFloat(document.getElementById('iMonto').value),
-        fecha: document.getElementById('iFecha').value,
-        timestamp: Date.now()
-      };
-      db.ref('ingresos').push(ingreso).then(() => {
-        alert('¡Ingreso guardado!');
-        document.getElementById('formIngreso').reset();
-        document.getElementById('iFecha').value = today;
-      }).catch(err => alert('Error: ' + err.message));
+    function editViaje(id, item) {
+      document.getElementById('vEditId').value = id;
+      document.getElementById('vCliente').value = item.cliente;
+      document.getElementById('vMonto').value = item.monto;
+      document.getElementById('vOrigen').value = item.origen;
+      document.getElementById('vDestino').value = item.destino;
+      document.getElementById('vKmInicial').value = item.kmInicial || '';
+      document.getElementById('vKmFinal').value = item.kmFinal || '';
+      calcKmViaje();
+      document.getElementById('vFecha').value = item.fecha;
+      document.getElementById('vEstado').value = item.estado || 'cobrado';
+      document.getElementById('vDetalle').value = item.detalle || '';
+
+      document.getElementById('viajeFormTitle').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Viaje';
+      document.getElementById('cancelEditViajeBtn').classList.remove('hidden');
+      switchTab('viajes');
     }
 
+    function resetFormViaje() {
+      document.getElementById('vEditId').value = '';
+      document.getElementById('formViaje').reset();
+      document.getElementById('vFecha').value = today;
+      calcKmViaje();
+      document.getElementById('viajeFormTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-accent"></i> Registrar Nuevo Viaje / Flete';
+      document.getElementById('cancelEditViajeBtn').classList.add('hidden');
+    }
+
+    function marcarCobrado(id) {
+      db.ref(`viajes/${id}`).update({ estado: 'cobrado' }).then(() => {
+        alert('¡Viaje marcado como cobrado!');
+      });
+    }
+
+    // Guardar / Editar Gasto
     function saveGasto(e) {
       e.preventDefault();
+      const editId = document.getElementById('gEditId').value;
       const gasto = {
         categoria: document.getElementById('gCategoria').value,
         monto: parseFloat(document.getElementById('gMonto').value),
@@ -347,11 +659,38 @@
         nota: document.getElementById('gNota').value,
         timestamp: Date.now()
       };
-      db.ref('gastos').push(gasto).then(() => {
-        alert('¡Gasto guardado!');
-        document.getElementById('formGasto').reset();
-        document.getElementById('gFecha').value = today;
-      }).catch(err => alert('Error: ' + err.message));
+
+      if (editId) {
+        db.ref(`gastos/${editId}`).update(gasto).then(() => {
+          alert('¡Gasto actualizado!');
+          resetFormGasto();
+        });
+      } else {
+        db.ref('gastos').push(gasto).then(() => {
+          alert('¡Gasto guardado!');
+          resetFormGasto();
+        });
+      }
+    }
+
+    function editGasto(id, item) {
+      document.getElementById('gEditId').value = id;
+      document.getElementById('gCategoria').value = item.categoria;
+      document.getElementById('gMonto').value = item.monto;
+      document.getElementById('gFecha').value = item.fecha;
+      document.getElementById('gNota').value = item.nota || '';
+
+      document.getElementById('gastoFormTitle').innerHTML = '<i class="fa-solid fa-pen text-rose-400"></i> Editar Gasto';
+      document.getElementById('cancelEditGastoBtn').classList.remove('hidden');
+      switchTab('gastos');
+    }
+
+    function resetFormGasto() {
+      document.getElementById('gEditId').value = '';
+      document.getElementById('formGasto').reset();
+      document.getElementById('gFecha').value = today;
+      document.getElementById('gastoFormTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-rose-400"></i> Registrar Gasto';
+      document.getElementById('cancelEditGastoBtn').classList.add('hidden');
     }
 
     function deleteItem(path, id) {
@@ -360,68 +699,146 @@
       }
     }
 
-    // Cargar Datos
+    // Guardar Configuración
+    function saveConfig(e) {
+      e.preventDefault();
+      const config = {
+        nombre: document.getElementById('cfgNombre').value || 'Fletes',
+        telefono: document.getElementById('cfgTelefono').value || '',
+        cuenta: document.getElementById('cfgCuenta').value || '',
+        kmActual: parseFloat(document.getElementById('cfgKmActual').value) || 0,
+        kmProximo: parseFloat(document.getElementById('cfgKmProximo').value) || 0,
+        tema: document.getElementById('cfgTema').value || 'theme-amber'
+      };
+      db.ref('config').set(config).then(() => alert('¡Ajustes guardados!'));
+    }
+
+    // Cargar Configuración
+    db.ref('config').on('value', snap => {
+      globalConfig = snap.val() || {};
+      const nombre = globalConfig.nombre || 'Fletes';
+      document.getElementById('appTitle').innerText = nombre;
+      document.getElementById('cfgNombre').value = globalConfig.nombre || '';
+      document.getElementById('cfgTelefono').value = globalConfig.telefono || '';
+      document.getElementById('cfgCuenta').value = globalConfig.cuenta || '';
+      document.getElementById('cfgKmActual').value = globalConfig.kmActual || '';
+      document.getElementById('cfgKmProximo').value = globalConfig.kmProximo || '';
+      document.getElementById('cfgTema').value = globalConfig.tema || 'theme-amber';
+
+      document.getElementById('appBody').className = `bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans ${globalConfig.tema || 'theme-amber'}`;
+      updateResumen();
+    });
+
+    // Escuchar Viajes y Pendientes
     db.ref('viajes').on('value', snap => {
-      const data = snap.val() || {};
-      const container = document.getElementById('viajesList');
-      if (Object.keys(data).length === 0) {
-        container.innerHTML = '<p class="text-slate-400 text-sm italic">No hay viajes registrados.</p>';
+      globalViajes = snap.val() || {};
+      updateResumen();
+
+      const containerViajes = document.getElementById('viajesList');
+      const containerPendientes = document.getElementById('pendientesList');
+
+      if (Object.keys(globalViajes).length === 0) {
+        containerViajes.innerHTML = '<p class="text-slate-400 text-sm italic">No hay viajes registrados.</p>';
+        containerPendientes.innerHTML = '<p class="text-slate-400 text-sm italic">No hay pagos pendientes.</p>';
         return;
       }
-      container.innerHTML = '';
-      Object.entries(data).forEach(([id, item]) => {
-        container.innerHTML += `
-          <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
+
+      containerViajes.innerHTML = '';
+      containerPendientes.innerHTML = '';
+      let tienePendientes = false;
+
+      Object.entries(globalViajes).reverse().forEach(([id, item]) => {
+        const esPendiente = item.estado === 'pendiente';
+        const badge = esPendiente 
+          ? `<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">PENDIENTE</span>`
+          : `<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">COBRADO</span>`;
+
+        const kmInfo = item.kmRecorridos ? `<span class="text-xs text-slate-400 ml-2">(${item.kmRecorridos} km)</span>` : '';
+
+        // Item Historial Viajes
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center gap-2">
+              <p class="font-bold text-slate-100">${item.cliente}</p>
+              ${badge}
+            </div>
+            <p class="text-xs text-amber-400 font-mono font-bold">$${item.monto} ${kmInfo}</p>
+            <p class="text-xs text-slate-400">${item.origen} ➔ ${item.destino}</p>
+            <p class="text-xs text-slate-500">${item.fecha} ${item.detalle ? '• ' + item.detalle : ''}</p>
+          </div>
+          <div class="flex items-center gap-1">
+            <button class="btn-edit text-slate-400 hover:text-amber-400 p-2"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteItem('viajes', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
+          </div>`;
+        card.querySelector('.btn-edit').onclick = () => editViaje(id, item);
+        containerViajes.appendChild(card);
+
+        // Item Pendientes
+        if (esPendiente) {
+          tienePendientes = true;
+          const cardP = document.createElement('div');
+          cardP.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
+          cardP.innerHTML = `
             <div>
-              <p class="font-bold text-slate-100">${item.cliente} <span class="text-xs text-amber-400 font-mono">($${item.monto})</span></p>
+              <p class="font-bold text-slate-100">${item.cliente}</p>
+              <p class="text-xs text-amber-400 font-mono font-bold">$${item.monto}</p>
               <p class="text-xs text-slate-400">${item.origen} ➔ ${item.destino}</p>
               <p class="text-xs text-slate-500">${item.fecha}</p>
             </div>
-            <button onclick="deleteItem('viajes', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
-          </div>`;
+            <div class="flex items-center gap-2">
+              <button onclick="marcarCobrado('${id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-lg font-bold flex items-center gap-1">
+                <i class="fa-solid fa-check"></i> Cobrado
+              </button>
+            </div>`;
+          containerPendientes.appendChild(cardP);
+        }
       });
-    });
 
-    db.ref('ingresos').on('value', snap => {
-      const data = snap.val() || {};
-      const container = document.getElementById('ingresosList');
-      if (Object.keys(data).length === 0) {
-        container.innerHTML = '<p class="text-slate-400 text-sm italic">No hay ingresos registrados.</p>';
-        return;
+      if (!tienePendientes) {
+        containerPendientes.innerHTML = '<p class="text-slate-400 text-sm italic">¡No tenés pagos pendientes!</p>';
       }
-      container.innerHTML = '';
-      Object.entries(data).forEach(([id, item]) => {
-        container.innerHTML += `
-          <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
-            <div>
-              <p class="font-bold text-slate-100">${item.concepto} <span class="text-xs text-emerald-400 font-mono">($${item.monto})</span></p>
-              <p class="text-xs text-slate-500">${item.fecha}</p>
-            </div>
-            <button onclick="deleteItem('ingresos', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
-          </div>`;
-      });
     });
 
+    // Escuchar Gastos
     db.ref('gastos').on('value', snap => {
-      const data = snap.val() || {};
+      globalGastos = snap.val() || {};
+      updateResumen();
+
       const container = document.getElementById('gastosList');
-      if (Object.keys(data).length === 0) {
+      if (Object.keys(globalGastos).length === 0) {
         container.innerHTML = '<p class="text-slate-400 text-sm italic">No hay gastos registrados.</p>';
         return;
       }
       container.innerHTML = '';
-      Object.entries(data).forEach(([id, item]) => {
-        container.innerHTML += `
-          <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
-            <div>
-              <p class="font-bold text-slate-100">${item.categoria} <span class="text-xs text-rose-400 font-mono">($${item.monto})</span></p>
-              <p class="text-xs text-slate-400">${item.nota || ''}</p>
-              <p class="text-xs text-slate-500">${item.fecha}</p>
-            </div>
+      Object.entries(globalGastos).reverse().forEach(([id, item]) => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
+        card.innerHTML = `
+          <div>
+            <p class="font-bold text-slate-100">${item.categoria} <span class="text-xs text-rose-400 font-mono">($${item.monto})</span></p>
+            <p class="text-xs text-slate-400">${item.nota || ''}</p>
+            <p class="text-xs text-slate-500">${item.fecha}</p>
+          </div>
+          <div class="flex items-center gap-1">
+            <button class="btn-edit text-slate-400 hover:text-amber-400 p-2"><i class="fa-solid fa-pen"></i></button>
             <button onclick="deleteItem('gastos', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
           </div>`;
+        card.querySelector('.btn-edit').onclick = () => editGasto(id, item);
+        container.appendChild(card);
       });
     });
+
+    function probarConexion() {
+      db.ref('.info/connected').once('value', snap => {
+        alert(snap.val() ? '¡Conexión Exitosa con Firebase!' : 'Atención: La app está desconectada.');
+      });
+    }
+
+    function recargarApp() {
+      window.location.reload();
+    }
   </script>
 </body>
 </html>
