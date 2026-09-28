@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CRM Fletes - Control de Viajes y Gastos</title>
+  <title>CRM Fletes</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Firebase JS SDK (v9 Compatibilidad) -->
+  <!-- Firebase JS SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
@@ -30,8 +30,8 @@
   <!-- Navegación por Pestañas -->
   <nav class="bg-slate-800/80 border-b border-slate-700 sticky top-14 z-40 backdrop-blur-md">
     <div class="max-w-4xl mx-auto flex overflow-x-auto text-sm">
-      <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-amber-400 text-amber-400 whitespace-nowrap">
-        <i class="fa-solid fa-chart-line"></i> Resumen
+      <button onclick="switchTab('cotizar')" id="tab-cotizar" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-amber-400 text-amber-400 whitespace-nowrap">
+        <i class="fa-solid fa-calculator"></i> Cotizar
       </button>
       <button onclick="switchTab('viajes')" id="tab-viajes" class="tab-btn px-4 py-3 flex items-center gap-2 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">
         <i class="fa-solid fa-route"></i> Viajes
@@ -51,29 +51,39 @@
   <!-- Contenido Principal -->
   <main class="flex-1 max-w-4xl w-full mx-auto p-4 space-y-6">
 
-    <!-- 1. PESTAÑA RESUMEN -->
-    <section id="sec-dashboard" class="tab-content space-y-6">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-lg">
-          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Total Ingresos</p>
-          <p id="totalIngresos" class="text-2xl font-extrabold text-emerald-400 mt-1">$0</p>
-        </div>
-        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-lg">
-          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Total Gastos</p>
-          <p id="totalGastos" class="text-2xl font-extrabold text-rose-400 mt-1">$0</p>
-        </div>
-        <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-lg">
-          <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Balance Neto</p>
-          <p id="totalBalance" class="text-2xl font-extrabold text-amber-400 mt-1">$0</p>
-        </div>
-      </div>
-
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
+    <!-- 1. PESTAÑA COTIZAR -->
+    <section id="sec-cotizar" class="tab-content space-y-6">
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
         <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Historial Reciente
+          <i class="fa-solid fa-calculator text-amber-400"></i> Cotizador de Flete
         </h2>
-        <div id="recentHistoryList" class="space-y-3">
-          <p class="text-slate-400 text-sm italic">Cargando registros...</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Distancia Estimada (Km)</label>
+            <input type="number" id="cKm" oninput="calcularCotizacion()" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Precio por Km ($)</label>
+            <input type="number" id="cPrecioKm" oninput="calcularCotizacion()" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Carga / Descarga / Adicionales ($)</label>
+            <input type="number" id="cAdicional" oninput="calcularCotizacion()" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Peajes Estimados ($)</label>
+            <input type="number" id="cPeaje" oninput="calcularCotizacion()" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="mt-6 p-4 bg-slate-900/90 border border-slate-700 rounded-lg flex justify-between items-center">
+          <div>
+            <p class="text-xs text-slate-400 uppercase font-bold">Total Cotizado</p>
+            <p id="cTotal" class="text-2xl font-extrabold text-amber-400">$0</p>
+          </div>
+          <button onclick="copiarCotizacion()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-copy"></i> Copiar Cotización
+          </button>
         </div>
       </div>
     </section>
@@ -91,24 +101,24 @@
               <input type="text" id="vCliente" required placeholder="Nombre del cliente" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto del Flete ($)</label>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto ($)</label>
               <input type="number" id="vMonto" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Origen</label>
-              <input type="text" id="vOrigen" required placeholder="Lugar de origen" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+              <input type="text" id="vOrigen" required placeholder="Origen" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Destino</label>
-              <input type="text" id="vDestino" required placeholder="Lugar de destino" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+              <input type="text" id="vDestino" required placeholder="Destino" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha</label>
               <input type="date" id="vFecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Detalles / Carga</label>
-              <input type="text" id="vDetalle" placeholder="Ej: Carga general, 500kg" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Detalle</label>
+              <input type="text" id="vDetalle" placeholder="Observaciones" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
           </div>
           <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
@@ -118,9 +128,9 @@
       </div>
 
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
-        <h3 class="text-md font-bold text-slate-200 mb-3">Lista de Viajes Registrados</h3>
+        <h3 class="text-md font-bold text-slate-200 mb-3">Historial de Viajes</h3>
         <div id="viajesList" class="space-y-3">
-          <p class="text-slate-400 text-sm italic">Cargando viajes...</p>
+          <p class="text-slate-400 text-sm italic">Cargando...</p>
         </div>
       </div>
     </section>
@@ -129,13 +139,13 @@
     <section id="sec-ingresos" class="tab-content hidden space-y-6">
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
         <h2 class="text-lg font-bold text-slate-200 mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-plus-circle text-emerald-400"></i> Registrar Otro Ingreso
+          <i class="fa-solid fa-plus-circle text-emerald-400"></i> Registrar Ingreso Extra
         </h2>
         <form id="formIngreso" onsubmit="saveIngreso(event)" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Concepto / Motivo</label>
-              <input type="text" id="iConcepto" required placeholder="Ej: Cobro adicional, propina, venta" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-400 focus:outline-none">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Concepto</label>
+              <input type="text" id="iConcepto" required placeholder="Ej: Adicional, Cobro previo" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-emerald-400 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Monto ($)</label>
@@ -153,9 +163,9 @@
       </div>
 
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
-        <h3 class="text-md font-bold text-slate-200 mb-3">Otros Ingresos Registrados</h3>
+        <h3 class="text-md font-bold text-slate-200 mb-3">Historial de Ingresos</h3>
         <div id="ingresosList" class="space-y-3">
-          <p class="text-slate-400 text-sm italic">Cargando ingresos...</p>
+          <p class="text-slate-400 text-sm italic">Cargando...</p>
         </div>
       </div>
     </section>
@@ -173,7 +183,7 @@
               <select id="gCategoria" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
                 <option value="Combustible">Combustible</option>
                 <option value="Peaje">Peaje</option>
-                <option value="Mantenimiento">Mantenimiento / Repuestos</option>
+                <option value="Mantenimiento">Mantenimiento</option>
                 <option value="Comida">Comida / Viáticos</option>
                 <option value="Otros">Otros</option>
               </select>
@@ -187,8 +197,8 @@
               <input type="date" id="gFecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Descripción / Nota</label>
-              <input type="text" id="gNota" placeholder="Ej: Carga YPF 20L" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Nota</label>
+              <input type="text" id="gNota" placeholder="Observaciones" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
             </div>
           </div>
           <button type="submit" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
@@ -198,9 +208,9 @@
       </div>
 
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg">
-        <h3 class="text-md font-bold text-slate-200 mb-3">Gastos Registrados</h3>
+        <h3 class="text-md font-bold text-slate-200 mb-3">Historial de Gastos</h3>
         <div id="gastosList" class="space-y-3">
-          <p class="text-slate-400 text-sm italic">Cargando gastos...</p>
+          <p class="text-slate-400 text-sm italic">Cargando...</p>
         </div>
       </div>
     </section>
@@ -209,16 +219,13 @@
     <section id="sec-config" class="tab-content hidden space-y-6">
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-4">
         <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-amber-400"></i> Estado de Configuración de Firebase
+          <i class="fa-solid fa-sliders text-amber-400"></i> Estado de Configuración
         </h2>
         <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-xs font-mono space-y-2 text-slate-300 overflow-x-auto">
           <p><span class="text-amber-400 font-bold">Proyecto ID:</span> fletes-9c875</p>
           <p><span class="text-amber-400 font-bold">Database URL:</span> https://fletes-9c875-default-rtdb.firebaseio.com</p>
-          <p><span class="text-amber-400 font-bold">Estado:</span> <span id="configDbStatus" class="text-yellow-400">Comprobando...</span></p>
+          <p><span class="text-amber-400 font-bold">Estado Conexión:</span> <span id="configDbStatus" class="text-yellow-400">Comprobando...</span></p>
         </div>
-        <p class="text-xs text-slate-400">
-          Si experimentas problemas para guardar o sincronizar datos, asegúrate de que las Reglas de Realtime Database en Firebase Console estén configuradas en modo público para lectura/escritura (`".read": true, ".write": true`).
-        </p>
       </div>
     </section>
 
@@ -226,7 +233,7 @@
 
   <!-- LÓGICA JAVASCRIPT -->
   <script>
-    // 1. Configuración de Firebase con tus credenciales reales
+    // Configuración Firebase del usuario
     const firebaseConfig = {
       apiKey: "AIzaSyDGHK8XrH5C3XCKJZXFrBi15AWnQ7ar38",
       authDomain: "fletes-9c875.firebaseapp.com",
@@ -237,17 +244,16 @@
       appId: "1:326542139919:web:706972592d8b3c264f397a"
     };
 
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // Establecer fecha por defecto en los formularios
+    // Fecha predeterminada
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('vFecha').value = today;
     document.getElementById('iFecha').value = today;
     document.getElementById('gFecha').value = today;
 
-    // Verificar conexión a la BD
+    // Estado Conexión
     db.ref('.info/connected').on('value', (snap) => {
       const statusEl = document.getElementById('connectionStatus');
       const configStatusEl = document.getElementById('configDbStatus');
@@ -255,16 +261,16 @@
         statusEl.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30";
         statusEl.innerText = "Conectado";
         configStatusEl.className = "text-emerald-400 font-bold";
-        configStatusEl.innerText = "Conectado correctamente";
+        configStatusEl.innerText = "Conectado a Firebase";
       } else {
         statusEl.className = "text-xs px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30";
         statusEl.innerText = "Desconectado";
         configStatusEl.className = "text-rose-400 font-bold";
-        configStatusEl.innerText = "Desconectado (Verifica reglas de Firebase)";
+        configStatusEl.innerText = "Desconectado";
       }
     });
 
-    // Control de pestañas
+    // Pestañas
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(el => {
@@ -278,11 +284,30 @@
       activeBtn.classList.add('border-amber-400', 'text-amber-400');
     }
 
-    // Guardar Viaje
+    // Calculadora Cotización
+    function calcularCotizacion() {
+      const km = parseFloat(document.getElementById('cKm').value) || 0;
+      const precioKm = parseFloat(document.getElementById('cPrecioKm').value) || 0;
+      const adicional = parseFloat(document.getElementById('cAdicional').value) || 0;
+      const peaje = parseFloat(document.getElementById('cPeaje').value) || 0;
+
+      const total = (km * precioKm) + adicional + peaje;
+      document.getElementById('cTotal').innerText = `$${total.toLocaleString()}`;
+    }
+
+    function copiarCotizacion() {
+      const total = document.getElementById('cTotal').innerText;
+      const km = document.getElementById('cKm').value || 0;
+      const texto = `Cotización de Flete:\n- Distancia: ${km} km\n- Total: ${total}`;
+      navigator.clipboard.writeText(texto).then(() => {
+        alert('¡Cotización copiada al portapapeles!');
+      });
+    }
+
+    // Guardar en Firebase
     function saveViaje(e) {
       e.preventDefault();
       const viaje = {
-        type: 'viaje',
         cliente: document.getElementById('vCliente').value,
         monto: parseFloat(document.getElementById('vMonto').value),
         origen: document.getElementById('vOrigen').value,
@@ -291,182 +316,111 @@
         detalle: document.getElementById('vDetalle').value,
         timestamp: Date.now()
       };
-
       db.ref('viajes').push(viaje).then(() => {
-        alert('¡Viaje guardado con éxito!');
+        alert('¡Viaje guardado!');
         document.getElementById('formViaje').reset();
         document.getElementById('vFecha').value = today;
-      }).catch(err => alert('Error al guardar viaje: ' + err.message));
+      }).catch(err => alert('Error: ' + err.message));
     }
 
-    // Guardar Ingreso
     function saveIngreso(e) {
       e.preventDefault();
       const ingreso = {
-        type: 'ingreso',
         concepto: document.getElementById('iConcepto').value,
         monto: parseFloat(document.getElementById('iMonto').value),
         fecha: document.getElementById('iFecha').value,
         timestamp: Date.now()
       };
-
       db.ref('ingresos').push(ingreso).then(() => {
-        alert('¡Ingreso guardado con éxito!');
+        alert('¡Ingreso guardado!');
         document.getElementById('formIngreso').reset();
         document.getElementById('iFecha').value = today;
-      }).catch(err => alert('Error al guardar ingreso: ' + err.message));
+      }).catch(err => alert('Error: ' + err.message));
     }
 
-    // Guardar Gasto
     function saveGasto(e) {
       e.preventDefault();
       const gasto = {
-        type: 'gasto',
         categoria: document.getElementById('gCategoria').value,
         monto: parseFloat(document.getElementById('gMonto').value),
         fecha: document.getElementById('gFecha').value,
         nota: document.getElementById('gNota').value,
         timestamp: Date.now()
       };
-
       db.ref('gastos').push(gasto).then(() => {
-        alert('¡Gasto guardado con éxito!');
+        alert('¡Gasto guardado!');
         document.getElementById('formGasto').reset();
         document.getElementById('gFecha').value = today;
-      }).catch(err => alert('Error al guardar gasto: ' + err.message));
+      }).catch(err => alert('Error: ' + err.message));
     }
 
-    // Eliminar Registro
     function deleteItem(path, id) {
-      if (confirm('¿Estás seguro de eliminar este registro?')) {
+      if (confirm('¿Eliminar este registro?')) {
         db.ref(`${path}/${id}`).remove();
       }
     }
 
-    // Escuchar datos en tiempo real
-    let globalViajes = {};
-    let globalIngresos = {};
-    let globalGastos = {};
-
-    function updateAllViews() {
-      let sumIngresos = 0;
-      let sumGastos = 0;
-      let allRecords = [];
-
-      // Render Viajes
-      const viajesList = document.getElementById('viajesList');
-      if (Object.keys(globalViajes).length === 0) {
-        viajesList.innerHTML = '<p class="text-slate-400 text-sm italic">No hay viajes registrados.</p>';
-      } else {
-        viajesList.innerHTML = '';
-        Object.entries(globalViajes).forEach(([id, item]) => {
-          sumIngresos += item.monto || 0;
-          allRecords.push({...item, id, refPath: 'viajes'});
-          viajesList.innerHTML += `
-            <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
-              <div>
-                <p class="font-bold text-slate-100">${item.cliente} <span class="text-xs text-amber-400 font-mono">($${item.monto})</span></p>
-                <p class="text-xs text-slate-400"><i class="fa-solid fa-location-dot"></i> ${item.origen} ➔ ${item.destino}</p>
-                <p class="text-xs text-slate-500">${item.fecha} ${item.detalle ? '| ' + item.detalle : ''}</p>
-              </div>
-              <button onclick="deleteItem('viajes', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          `;
-        });
-      }
-
-      // Render Ingresos
-      const ingresosList = document.getElementById('ingresosList');
-      if (Object.keys(globalIngresos).length === 0) {
-        ingresosList.innerHTML = '<p class="text-slate-400 text-sm italic">No hay otros ingresos registrados.</p>';
-      } else {
-        ingresosList.innerHTML = '';
-        Object.entries(globalIngresos).forEach(([id, item]) => {
-          sumIngresos += item.monto || 0;
-          allRecords.push({...item, id, refPath: 'ingresos'});
-          ingresosList.innerHTML += `
-            <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
-              <div>
-                <p class="font-bold text-slate-100">${item.concepto} <span class="text-xs text-emerald-400 font-mono">($${item.monto})</span></p>
-                <p class="text-xs text-slate-500">${item.fecha}</p>
-              </div>
-              <button onclick="deleteItem('ingresos', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          `;
-        });
-      }
-
-      // Render Gastos
-      const gastosList = document.getElementById('gastosList');
-      if (Object.keys(globalGastos).length === 0) {
-        gastosList.innerHTML = '<p class="text-slate-400 text-sm italic">No hay gastos registrados.</p>';
-      } else {
-        gastosList.innerHTML = '';
-        Object.entries(globalGastos).forEach(([id, item]) => {
-          sumGastos += item.monto || 0;
-          allRecords.push({...item, id, refPath: 'gastos'});
-          gastosList.innerHTML += `
-            <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
-              <div>
-                <p class="font-bold text-slate-100">${item.categoria} <span class="text-xs text-rose-400 font-mono">($${item.monto})</span></p>
-                <p class="text-xs text-slate-400">${item.nota || ''}</p>
-                <p class="text-xs text-slate-500">${item.fecha}</p>
-              </div>
-              <button onclick="deleteItem('gastos', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          `;
-        });
-      }
-
-      // Actualizar Totales del Resumen
-      document.getElementById('totalIngresos').innerText = `$${sumIngresos.toLocaleString()}`;
-      document.getElementById('totalGastos').innerText = `$${sumGastos.toLocaleString()}`;
-      const balance = sumIngresos - sumGastos;
-      const balanceEl = document.getElementById('totalBalance');
-      balanceEl.innerText = `$${balance.toLocaleString()}`;
-      balanceEl.className = `text-2xl font-extrabold mt-1 ${balance >= 0 ? 'text-amber-400' : 'text-rose-500'}`;
-
-      // Historial Reciente
-      const historyList = document.getElementById('recentHistoryList');
-      if (allRecords.length === 0) {
-        historyList.innerHTML = '<p class="text-slate-400 text-sm italic">No hay actividad reciente.</p>';
-      } else {
-        allRecords.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        historyList.innerHTML = '';
-        allRecords.slice(0, 5).forEach(rec => {
-          const isGasto = rec.type === 'gasto';
-          historyList.innerHTML += `
-            <div class="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-lg border border-slate-800 text-xs">
-              <div class="flex items-center gap-2">
-                <i class="fa-solid ${isGasto ? 'fa-arrow-down text-rose-400' : 'fa-arrow-up text-emerald-400'}"></i>
-                <div>
-                  <p class="font-semibold text-slate-200">${rec.cliente || rec.concepto || rec.categoria}</p>
-                  <p class="text-slate-500">${rec.fecha}</p>
-                </div>
-              </div>
-              <span class="font-mono font-bold ${isGasto ? 'text-rose-400' : 'text-emerald-400'}">
-                ${isGasto ? '-' : '+'}$${rec.monto}
-              </span>
-            </div>
-          `;
-        });
-      }
-    }
-
-    // Escuchadores de Firebase
+    // Cargar Datos
     db.ref('viajes').on('value', snap => {
-      globalViajes = snap.val() || {};
-      updateAllViews();
+      const data = snap.val() || {};
+      const container = document.getElementById('viajesList');
+      if (Object.keys(data).length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-sm italic">No hay viajes registrados.</p>';
+        return;
+      }
+      container.innerHTML = '';
+      Object.entries(data).forEach(([id, item]) => {
+        container.innerHTML += `
+          <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
+            <div>
+              <p class="font-bold text-slate-100">${item.cliente} <span class="text-xs text-amber-400 font-mono">($${item.monto})</span></p>
+              <p class="text-xs text-slate-400">${item.origen} ➔ ${item.destino}</p>
+              <p class="text-xs text-slate-500">${item.fecha}</p>
+            </div>
+            <button onclick="deleteItem('viajes', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
+          </div>`;
+      });
     });
 
     db.ref('ingresos').on('value', snap => {
-      globalIngresos = snap.val() || {};
-      updateAllViews();
+      const data = snap.val() || {};
+      const container = document.getElementById('ingresosList');
+      if (Object.keys(data).length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-sm italic">No hay ingresos registrados.</p>';
+        return;
+      }
+      container.innerHTML = '';
+      Object.entries(data).forEach(([id, item]) => {
+        container.innerHTML += `
+          <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
+            <div>
+              <p class="font-bold text-slate-100">${item.concepto} <span class="text-xs text-emerald-400 font-mono">($${item.monto})</span></p>
+              <p class="text-xs text-slate-500">${item.fecha}</p>
+            </div>
+            <button onclick="deleteItem('ingresos', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
+          </div>`;
+      });
     });
 
     db.ref('gastos').on('value', snap => {
-      globalGastos = snap.val() || {};
-      updateAllViews();
+      const data = snap.val() || {};
+      const container = document.getElementById('gastosList');
+      if (Object.keys(data).length === 0) {
+        container.innerHTML = '<p class="text-slate-400 text-sm italic">No hay gastos registrados.</p>';
+        return;
+      }
+      container.innerHTML = '';
+      Object.entries(data).forEach(([id, item]) => {
+        container.innerHTML += `
+          <div class="bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center">
+            <div>
+              <p class="font-bold text-slate-100">${item.categoria} <span class="text-xs text-rose-400 font-mono">($${item.monto})</span></p>
+              <p class="text-xs text-slate-400">${item.nota || ''}</p>
+              <p class="text-xs text-slate-500">${item.fecha}</p>
+            </div>
+            <button onclick="deleteItem('gastos', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
+          </div>`;
+      });
     });
   </script>
 </body>
