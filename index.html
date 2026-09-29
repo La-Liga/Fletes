@@ -53,7 +53,7 @@
       <img 
         src="logo-app.png" 
         alt="Fletes PAELO Logo" 
-        class="w-10 h-10 object-cover rounded-lg border border-slate-700 shadow-sm"
+        class="w-5 h-5 object-cover rounded-lg border border-slate-700 shadow-sm"
       />
       <div>
         <h1 class="text-xl font-black text-white tracking-wide leading-none">
@@ -428,477 +428,124 @@
 
   </main>
 
-  <!-- LÓGICA JAVASCRIPT -->
-  <script>
-    const firebaseConfig = {  
-      apiKey: "AIzaSyDGHK8XrH5C3XCKJZXFrBi15AWnQ7ar38",
-      authDomain: "fletes-9c875.firebaseapp.com",
-      databaseURL: "https://fletes-9c875-default-rtdb.firebaseio.com",
-      projectId: "fletes-9c875",
-      storageBucket: "fletes-9c875.firebasestorage.app",
-      messagingSenderId: "326542139919",
-      appId: "1:326542139919:web:706972592d8b3c264f397a"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-</script>
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('vFecha').value = today;
-    document.getElementById('gFecha').value = today;
+ <!-- LÓGICA JAVASCRIPT -->
+<script>
+  // 1. Configuración de Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDGHK8XrH5C3XCKJZXFrBi15AWnQ7ar38",
+    authDomain: "fletes-9c875.firebaseapp.com",
+    databaseURL: "https://fletes-9c875-default-rtdb.firebaseio.com",
+    projectId: "fletes-9c875",
+    storageBucket: "fletes-9c875.firebasestorage.app",
+    messagingSenderId: "326542139919",
+    appId: "1:326542139919:web:706972592d8b3c264f397a"
+  };
 
-    let globalViajes = {};
-    let globalGastos = {};
-    let globalConfig = {};
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-    // Estado Conexión
-    db.ref('.info/connected').on('value', (snap) => {
-      const statusEl = document.getElementById('connectionStatus');
+  // 2. Control de Autenticación de Administrador
+  firebase.auth().onAuthStateChanged((user) => {
+    const badge = document.getElementById('badge-estado');
+    const boxLogin = document.getElementById('box-login');
+    const boxAdminActivo = document.getElementById('box-admin-activo');
+    const txtUserEmail = document.getElementById('txt-user-email');
+
+    if (user) {
+      if (badge) {
+        badge.textContent = 'Admin Activo';
+        badge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      }
+      if (boxLogin) boxLogin.classList.add('hidden');
+      if (boxAdminActivo) boxAdminActivo.classList.remove('hidden');
+      if (txtUserEmail) txtUserEmail.textContent = user.email;
+    } else {
+      if (badge) {
+        badge.textContent = 'Modo Lectura';
+        badge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-slate-700 text-slate-300';
+      }
+      if (boxLogin) boxLogin.classList.remove('hidden');
+      if (boxAdminActivo) boxAdminActivo.classList.add('hidden');
+      if (txtUserEmail) txtUserEmail.textContent = '';
+    }
+  });
+
+  function iniciarSesionAdmin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+      alert('Por favor ingresa correo y contraseña.');
+      return;
+    }
+
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(() => {
+        alert('¡Bienvenido! Modo Administrador activado.');
+        document.getElementById('login-password').value = '';
+      })
+      .catch((error) => {
+        alert('Error al ingresar: ' + error.message);
+      });
+  }
+
+  function cerrarSesionAdmin() {
+    firebase.auth().signOut()
+      .then(() => {
+        alert('Sesión cerrada. La app queda en Modo Lectura.');
+      })
+      .catch((error) => {
+        alert('Error al cerrar sesión: ' + error.message);
+      });
+  }
+
+  // 3. Inicialización de Fechas por Defecto
+  const today = new Date().toISOString().split('T')[0];
+  if (document.getElementById('vFecha')) document.getElementById('vFecha').value = today;
+  if (document.getElementById('gFecha')) document.getElementById('gFecha').value = today;
+
+  // 4. Monitoreo de Estado de Conexión
+  db.ref('.info/connected').on('value', (snap) => {
+    const statusEl = document.getElementById('connectionStatus');
+    if (statusEl) {
       if (snap.val() === true) {
-        statusEl.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30";
+        statusEl.className = "px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30";
         statusEl.innerText = "Conectado";
       } else {
-        statusEl.className = "text-xs px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30";
+        statusEl.className = "px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30";
         statusEl.innerText = "Desconectado";
       }
+    }
+  });
+
+  // 5. Variables Globales
+  let globalViajes = {};
+  let globalGastos = {};
+  let globalConfig = {};
+
+  // 6. Funciones Generales e Utilidades
+  function calcKmViaje() {
+    const init = parseFloat(document.getElementById('vKmInicial').value) || 0;
+    const fin = parseFloat(document.getElementById('vKmFinal').value) || 0;
+    const calcEl = document.getElementById('vKmCalculados');
+
+    if (fin > 0 && init > 0) {
+      if (fin >= init) {
+        const diff = fin - init;
+        if (calcEl) calcEl.innerText = `${diff.toLocaleString()} km`;
+      }
+    }
+  }
+
+  function probarConexion() {
+    db.ref('.info/connected').once('value', snap => {
+      alert(snap.val() ? '¡Conexión Exitosa con Firebase!' : 'Sin conexión');
     });
+  }
 
-    // Pestañas
-    function switchTab(tabName) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(el => {
-        el.classList.remove('border-accent', 'text-accent');
-        el.classList.add('border-transparent', 'text-slate-400');
-      });
-
-      document.getElementById(`sec-${tabName}`).classList.remove('hidden');
-      const activeBtn = document.getElementById(`tab-${tabName}`);
-      activeBtn.classList.remove('border-transparent', 'text-slate-400');
-      activeBtn.classList.add('border-accent', 'text-accent');
-    }
-
-    // Calculadora Cotización
-    function calcularCotizacion() {
-      const km = parseFloat(document.getElementById('cKm').value) || 0;
-      const precioKm = parseFloat(document.getElementById('cPrecioKm').value) || 0;
-      const adicional = parseFloat(document.getElementById('cAdicional').value) || 0;
-      const peaje = parseFloat(document.getElementById('cPeaje').value) || 0;
-
-      const total = (km * precioKm) + adicional + peaje;
-      document.getElementById('cTotal').innerText = `$${total.toLocaleString()}`;
-    }
-
-    function copiarCotizacion() {
-      const total = document.getElementById('cTotal').innerText;
-      const km = document.getElementById('cKm').value || 0;
-      const cuenta = document.getElementById('cfgCuenta').value;
-      const telefono = document.getElementById('cfgTelefono').value;
-
-      let texto = `Cotización de Flete:\n- Distancia: ${km} km\n- Total: ${total}`;
-      if (telefono) texto += `\n- Contacto: ${telefono}`;
-      if (cuenta) texto += `\n- Cuenta/Alias: ${cuenta}`;
-
-      navigator.clipboard.writeText(texto).then(() => alert('¡Cotización copiada al portapapeles!'));
-    }
-
-    // Calcular Km del Viaje en Formulario
-    function calcKmViaje() {
-      const init = parseFloat(document.getElementById('vKmInicial').value) || 0;
-      const fin = parseFloat(document.getElementById('vKmFinal').value) || 0;
-      const calcEl = document.getElementById('vKmCalculados');
-
-      if (fin > 0 && init > 0) {
-        if (fin >= init) {
-          const diff = fin - init;
-          calcEl.innerText = `${diff.toLocaleString()} km`;
-          calcEl.className = "text-sm font-bold text-emerald-400 font-mono";
-        } else {
-          calcEl.innerText = "Error: El km final debe ser mayor al inicial";
-          calcEl.className = "text-xs font-bold text-rose-400 font-mono";
-        }
-      } else {
-        calcEl.innerText = "0 km";
-        calcEl.className = "text-sm font-bold text-accent font-mono";
-      }
-    }
-
-    // Actualizar Métrica, Odómetro y Resumen
-    function updateResumen() {
-      let totalIngresos = 0;
-      let totalGastos = 0;
-      let actividades = [];
-
-      Object.entries(globalViajes).forEach(([id, v]) => {
-        if (v.estado === 'cobrado') {
-          totalIngresos += parseFloat(v.monto || 0);
-        }
-        actividades.push({
-          tipo: 'viaje',
-          fecha: v.fecha,
-          titulo: `Viaje - ${v.cliente}`,
-          sub: `${v.origen} ➔ ${v.destino} ${v.kmRecorridos ? ' (' + v.kmRecorridos + ' km)' : ''}`,
-          monto: v.monto,
-          estado: v.estado,
-          timestamp: v.timestamp || 0
-        });
-      });
-
-      Object.entries(globalGastos).forEach(([id, g]) => {
-        totalGastos += parseFloat(g.monto || 0);
-        actividades.push({
-          tipo: 'gasto',
-          fecha: g.fecha,
-          titulo: `Gasto - ${g.categoria}`,
-          sub: g.nota || '',
-          monto: g.monto,
-          timestamp: g.timestamp || 0
-        });
-      });
-
-      const balance = totalIngresos - totalGastos;
-
-      document.getElementById('resumenIngresos').innerText = `$${totalIngresos.toLocaleString()}`;
-      document.getElementById('resumenGastos').innerText = `$${totalGastos.toLocaleString()}`;
-      document.getElementById('resumenBalance').innerText = `$${balance.toLocaleString()}`;
-
-      // Odómetro y Mantenimiento
-      const kmActual = parseFloat(globalConfig.kmActual || 0);
-      const kmProximo = parseFloat(globalConfig.kmProximo || 0);
-
-      document.getElementById('resumenKmActual').innerText = `${kmActual.toLocaleString()} km`;
-      document.getElementById('resumenKmProximo').innerText = kmProximo > 0 ? `${kmProximo.toLocaleString()} km` : 'Sin definir';
-
-      const badgeEl = document.getElementById('badgeMantenimiento');
-      const restEl = document.getElementById('resumenKmRestantes');
-      const barEl = document.getElementById('barMantenimiento');
-
-      if (kmProximo > 0) {
-        const restantes = kmProximo - kmActual;
-        restEl.innerText = `${restantes.toLocaleString()} km`;
-
-        if (restantes <= 0) {
-          badgeEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30";
-          badgeEl.innerText = "¡MANTENIMIENTO VENCIDO!";
-          restEl.className = "text-xl font-bold text-rose-400 font-mono";
-          barEl.style.width = "100%";
-          barEl.className = "bg-rose-500 h-2.5 rounded-full transition-all duration-300";
-        } else if (restantes <= 1000) {
-          badgeEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30";
-          badgeEl.innerText = "PRÓXIMO SERVICE PRONTO";
-          restEl.className = "text-xl font-bold text-amber-400 font-mono";
-          
-          const pct = Math.min(100, Math.max(0, (kmActual / kmProximo) * 100));
-          barEl.style.width = `${pct}%`;
-          barEl.className = "bg-amber-500 h-2.5 rounded-full transition-all duration-300";
-        } else {
-          badgeEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-          badgeEl.innerText = "AL DÍA";
-          restEl.className = "text-xl font-bold text-emerald-400 font-mono";
-
-          const pct = Math.min(100, Math.max(0, (kmActual / kmProximo) * 100));
-          barEl.style.width = `${pct}%`;
-          barEl.className = "bg-emerald-500 h-2.5 rounded-full transition-all duration-300";
-        }
-      } else {
-        badgeEl.className = "text-xs px-2.5 py-0.5 rounded-full font-bold bg-slate-700 text-slate-300";
-        badgeEl.innerText = "Sin Configurar";
-        restEl.innerText = "0 km";
-        barEl.style.width = "0%";
-      }
-
-      // Ordenar actividades recientes por fecha/timestamp
-      actividades.sort((a, b) => b.timestamp - a.timestamp);
-
-      const listEl = document.getElementById('historialRecienteList');
-      if (actividades.length === 0) {
-        listEl.innerHTML = '<p class="text-slate-400 text-sm italic">No hay actividad reciente.</p>';
-        return;
-      }
-
-      listEl.innerHTML = '';
-      actividades.slice(0, 5).forEach(act => {
-        const isViaje = act.tipo === 'viaje';
-        const card = document.createElement('div');
-        card.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
-        card.innerHTML = `
-          <div>
-            <p class="font-bold text-slate-100">${act.titulo}</p>
-            <p class="text-xs text-slate-400">${act.sub}</p>
-            <p class="text-xs text-slate-500">${act.fecha}</p>
-          </div>
-          <div class="text-right">
-            <p class="text-sm font-bold ${isViaje ? 'text-emerald-400' : 'text-rose-400'} font-mono">
-              ${isViaje ? '+' : '-'}$${act.monto}
-            </p>
-          </div>`;
-        listEl.appendChild(card);
-      });
-    }
-
-    // Guardar / Editar Viaje
-    function saveViaje(e) {
-      e.preventDefault();
-      const editId = document.getElementById('vEditId').value;
-      const kmInit = parseFloat(document.getElementById('vKmInicial').value) || 0;
-      const kmFin = parseFloat(document.getElementById('vKmFinal').value) || 0;
-      const kmRec = (kmFin >= kmInit && kmFin > 0 && kmInit > 0) ? (kmFin - kmInit) : 0;
-
-      const viaje = {
-        cliente: document.getElementById('vCliente').value,
-        monto: parseFloat(document.getElementById('vMonto').value),
-        origen: document.getElementById('vOrigen').value,
-        destino: document.getElementById('vDestino').value,
-        kmInicial: kmInit,
-        kmFinal: kmFin,
-        kmRecorridos: kmRec,
-        fecha: document.getElementById('vFecha').value,
-        estado: document.getElementById('vEstado').value,
-        detalle: document.getElementById('vDetalle').value,
-        timestamp: Date.now()
-      };
-
-      // Si se ingresó un kmFinal mayor al Odómetro Actual registrado en Configuración, actualizar el Odómetro
-      if (kmFin > parseFloat(globalConfig.kmActual || 0)) {
-        db.ref('config').update({ kmActual: kmFin });
-      }
-
-      if (editId) {
-        db.ref(`viajes/${editId}`).update(viaje).then(() => {
-          alert('¡Viaje actualizado!');
-          resetFormViaje();
-        });
-      } else {
-        db.ref('viajes').push(viaje).then(() => {
-          alert('¡Viaje guardado!');
-          resetFormViaje();
-        });
-      }
-    }
-
-    function editViaje(id, item) {
-      document.getElementById('vEditId').value = id;
-      document.getElementById('vCliente').value = item.cliente;
-      document.getElementById('vMonto').value = item.monto;
-      document.getElementById('vOrigen').value = item.origen;
-      document.getElementById('vDestino').value = item.destino;
-      document.getElementById('vKmInicial').value = item.kmInicial || '';
-      document.getElementById('vKmFinal').value = item.kmFinal || '';
-      calcKmViaje();
-      document.getElementById('vFecha').value = item.fecha;
-      document.getElementById('vEstado').value = item.estado || 'cobrado';
-      document.getElementById('vDetalle').value = item.detalle || '';
-
-      document.getElementById('viajeFormTitle').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Viaje';
-      document.getElementById('cancelEditViajeBtn').classList.remove('hidden');
-      switchTab('viajes');
-    }
-
-    function resetFormViaje() {
-      document.getElementById('vEditId').value = '';
-      document.getElementById('formViaje').reset();
-      document.getElementById('vFecha').value = today;
-      calcKmViaje();
-      document.getElementById('viajeFormTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-accent"></i> Registrar Nuevo Viaje / Flete';
-      document.getElementById('cancelEditViajeBtn').classList.add('hidden');
-    }
-
-    function marcarCobrado(id) {
-      db.ref(`viajes/${id}`).update({ estado: 'cobrado' }).then(() => {
-        alert('¡Viaje marcado como cobrado!');
-      });
-    }
-
-    // Guardar / Editar Gasto
-    function saveGasto(e) {
-      e.preventDefault();
-      const editId = document.getElementById('gEditId').value;
-      const gasto = {
-        categoria: document.getElementById('gCategoria').value,
-        monto: parseFloat(document.getElementById('gMonto').value),
-        fecha: document.getElementById('gFecha').value,
-        nota: document.getElementById('gNota').value,
-        timestamp: Date.now()
-      };
-
-      if (editId) {
-        db.ref(`gastos/${editId}`).update(gasto).then(() => {
-          alert('¡Gasto actualizado!');
-          resetFormGasto();
-        });
-      } else {
-        db.ref('gastos').push(gasto).then(() => {
-          alert('¡Gasto guardado!');
-          resetFormGasto();
-        });
-      }
-    }
-
-    function editGasto(id, item) {
-      document.getElementById('gEditId').value = id;
-      document.getElementById('gCategoria').value = item.categoria;
-      document.getElementById('gMonto').value = item.monto;
-      document.getElementById('gFecha').value = item.fecha;
-      document.getElementById('gNota').value = item.nota || '';
-
-      document.getElementById('gastoFormTitle').innerHTML = '<i class="fa-solid fa-pen text-rose-400"></i> Editar Gasto';
-      document.getElementById('cancelEditGastoBtn').classList.remove('hidden');
-      switchTab('gastos');
-    }
-
-    function resetFormGasto() {
-      document.getElementById('gEditId').value = '';
-      document.getElementById('formGasto').reset();
-      document.getElementById('gFecha').value = today;
-      document.getElementById('gastoFormTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-rose-400"></i> Registrar Gasto';
-      document.getElementById('cancelEditGastoBtn').classList.add('hidden');
-    }
-
-    function deleteItem(path, id) {
-      if (confirm('¿Eliminar este registro?')) {
-        db.ref(`${path}/${id}`).remove();
-      }
-    }
-
-    // Guardar Configuración
-    function saveConfig(e) {
-      e.preventDefault();
-      const config = {
-        nombre: document.getElementById('cfgNombre').value || 'Fletes',
-        telefono: document.getElementById('cfgTelefono').value || '',
-        cuenta: document.getElementById('cfgCuenta').value || '',
-        kmActual: parseFloat(document.getElementById('cfgKmActual').value) || 0,
-        kmProximo: parseFloat(document.getElementById('cfgKmProximo').value) || 0,
-        tema: document.getElementById('cfgTema').value || 'theme-amber'
-      };
-      db.ref('config').set(config).then(() => alert('¡Ajustes guardados!'));
-    }
-
-    // Cargar Configuración
-    db.ref('config').on('value', snap => {
-      globalConfig = snap.val() || {};
-      const nombre = globalConfig.nombre || 'Fletes';
-      document.getElementById('appTitle').innerText = nombre;
-      document.getElementById('cfgNombre').value = globalConfig.nombre || '';
-      document.getElementById('cfgTelefono').value = globalConfig.telefono || '';
-      document.getElementById('cfgCuenta').value = globalConfig.cuenta || '';
-      document.getElementById('cfgKmActual').value = globalConfig.kmActual || '';
-      document.getElementById('cfgKmProximo').value = globalConfig.kmProximo || '';
-      document.getElementById('cfgTema').value = globalConfig.tema || 'theme-amber';
-
-      document.getElementById('appBody').className = `bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans ${globalConfig.tema || 'theme-amber'}`;
-      updateResumen();
-    });
-
-    // Escuchar Viajes y Pendientes
-    db.ref('viajes').on('value', snap => {
-      globalViajes = snap.val() || {};
-      updateResumen();
-
-      const containerViajes = document.getElementById('viajesList');
-      const containerPendientes = document.getElementById('pendientesList');
-
-      if (Object.keys(globalViajes).length === 0) {
-        containerViajes.innerHTML = '<p class="text-slate-400 text-sm italic">No hay viajes registrados.</p>';
-        containerPendientes.innerHTML = '<p class="text-slate-400 text-sm italic">No hay pagos pendientes.</p>';
-        return;
-      }
-
-      containerViajes.innerHTML = '';
-      containerPendientes.innerHTML = '';
-      let tienePendientes = false;
-
-      Object.entries(globalViajes).reverse().forEach(([id, item]) => {
-        const esPendiente = item.estado === 'pendiente';
-        const badge = esPendiente 
-          ? `<span class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">PENDIENTE</span>`
-          : `<span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">COBRADO</span>`;
-
-        const kmInfo = item.kmRecorridos ? `<span class="text-xs text-slate-400 ml-2">(${item.kmRecorridos} km)</span>` : '';
-
-        // Item Historial Viajes
-        const card = document.createElement('div');
-        card.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
-        card.innerHTML = `
-          <div>
-            <div class="flex items-center gap-2">
-              <p class="font-bold text-slate-100">${item.cliente}</p>
-              ${badge}
-            </div>
-            <p class="text-xs text-amber-400 font-mono font-bold">$${item.monto} ${kmInfo}</p>
-            <p class="text-xs text-slate-400">${item.origen} ➔ ${item.destino}</p>
-            <p class="text-xs text-slate-500">${item.fecha} ${item.detalle ? '• ' + item.detalle : ''}</p>
-          </div>
-          <div class="flex items-center gap-1">
-            <button class="btn-edit text-slate-400 hover:text-amber-400 p-2"><i class="fa-solid fa-pen"></i></button>
-            <button onclick="deleteItem('viajes', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
-          </div>`;
-        card.querySelector('.btn-edit').onclick = () => editViaje(id, item);
-        containerViajes.appendChild(card);
-
-        // Item Pendientes
-        if (esPendiente) {
-          tienePendientes = true;
-          const cardP = document.createElement('div');
-          cardP.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
-          cardP.innerHTML = `
-            <div>
-              <p class="font-bold text-slate-100">${item.cliente}</p>
-              <p class="text-xs text-amber-400 font-mono font-bold">$${item.monto}</p>
-              <p class="text-xs text-slate-400">${item.origen} ➔ ${item.destino}</p>
-              <p class="text-xs text-slate-500">${item.fecha}</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <button onclick="marcarCobrado('${id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-lg font-bold flex items-center gap-1">
-                <i class="fa-solid fa-check"></i> Cobrado
-              </button>
-            </div>`;
-          containerPendientes.appendChild(cardP);
-        }
-      });
-
-      if (!tienePendientes) {
-        containerPendientes.innerHTML = '<p class="text-slate-400 text-sm italic">¡No tenés pagos pendientes!</p>';
-      }
-    });
-
-    // Escuchar Gastos
-    db.ref('gastos').on('value', snap => {
-      globalGastos = snap.val() || {};
-      updateResumen();
-
-      const container = document.getElementById('gastosList');
-      if (Object.keys(globalGastos).length === 0) {
-        container.innerHTML = '<p class="text-slate-400 text-sm italic">No hay gastos registrados.</p>';
-        return;
-      }
-      container.innerHTML = '';
-      Object.entries(globalGastos).reverse().forEach(([id, item]) => {
-        const card = document.createElement('div');
-        card.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
-        card.innerHTML = `
-          <div>
-            <p class="font-bold text-slate-100">${item.categoria} <span class="text-xs text-rose-400 font-mono">($${item.monto})</span></p>
-            <p class="text-xs text-slate-400">${item.nota || ''}</p>
-            <p class="text-xs text-slate-500">${item.fecha}</p>
-          </div>
-          <div class="flex items-center gap-1">
-            <button class="btn-edit text-slate-400 hover:text-amber-400 p-2"><i class="fa-solid fa-pen"></i></button>
-            <button onclick="deleteItem('gastos', '${id}')" class="text-rose-400 hover:text-rose-300 p-2"><i class="fa-solid fa-trash"></i></button>
-          </div>
-          `;
-        card.querySelector('.btn-edit').onclick = () => editGasto(id, item);
-        container.appendChild(card);
-      });
-    });
-
-    function probarConexion() {
-      db.ref('.info/connected').once('value', snap => {
-        alert(snap.val() ? '¡Conexión Exitosa con Firebase!' : 'Atención: La app está desconectada.');
-      });
-    }
-
-    function recargarApp() {
-      window.location.reload();
-    }
-  </script>
+  function recargarApp() {
+    window.location.reload();
+  }
+</script>
 </body>
 </html>
