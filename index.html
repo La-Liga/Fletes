@@ -31,6 +31,16 @@
     .text-accent { color: var(--accent-text); }
     .border-accent { border-color: var(--accent-color); }
   </style>
+  <!-- Firebase App (núcleo) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+  <!-- Firebase Realtime Database -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <!-- Firebase Authentication -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+</head>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 </head>
 <body id="appBody" class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans theme-amber">
 
@@ -41,7 +51,7 @@
     <!-- Logo e Identificador de la Empresa -->
     <div class="flex items-center gap-3">
       <img 
-        src="logo.png" 
+        src="logo-app.png" 
         alt="Fletes PAELO Logo" 
         class="w-10 h-10 object-cover rounded-lg border border-slate-700 shadow-sm"
       />
@@ -316,6 +326,46 @@
 
     <!-- 6. PESTAÑA CONFIGURACIÓN -->
     <section id="sec-config" class="tab-content hidden space-y-6">
+      <!-- MÓDULO DE AUTENTICACIÓN ADMINISTRADOR -->
+<div class="bg-slate-800 p-6 rounded-2xl border border-slate-700/60 shadow-lg mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+      <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+      Acceso de Administrador
+    </h3>
+    <span id="badge-estado" class="px-3 py-1 text-xs font-semibold rounded-full bg-slate-700 text-slate-300">
+      Modo Lectura
+    </span>
+  </div>
+
+  <!-- Formulario para Iniciar Sesión (Visible cuando no estás logueado) -->
+  <div id="box-login" class="space-y-4">
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-1">Correo Administrador</label>
+      <input type="email" id="login-email" placeholder="admin@fletespaelo.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-amber-500">
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-slate-400 mb-1">Contraseña</label>
+      <input type="password" id="login-password" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-amber-500">
+    </div>
+    <button onclick="iniciarSesionAdmin()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl transition shadow-md">
+      Ingresar como Administrador
+    </button>
+  </div>
+
+  <!-- Vista cuando YA estás autenticado -->
+  <div id="box-admin-activo" class="hidden flex items-center justify-between pt-2">
+    <div>
+      <p class="text-sm font-semibold text-emerald-400">✓ Sesión Administrador Activa</p>
+      <p id="txt-user-email" class="text-xs text-slate-400"></p>
+    </div>
+    <button onclick="cerrarSesionAdmin()" class="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 text-xs font-semibold px-4 py-2 rounded-xl transition">
+      Cerrar Sesión
+    </button>
+  </div>
+</div>
       <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg space-y-5">
         <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
           <i class="fa-solid fa-sliders text-accent"></i> Ajustes y Personalización
@@ -381,6 +431,66 @@
   <!-- LÓGICA JAVASCRIPT -->
   <script>
     const firebaseConfig = {
+      <script>
+  // 1. Escuchar cambios en el estado de autenticación de Firebase
+  firebase.auth().onAuthStateChanged((user) => {
+    const badge = document.getElementById('badge-estado');
+    const boxLogin = document.getElementById('box-login');
+    const boxAdminActivo = document.getElementById('box-admin-activo');
+    const txtUserEmail = document.getElementById('txt-user-email');
+
+    if (user) {
+      // Sesión activa como Admin
+      if (badge) {
+        badge.textContent = 'Admin Activo';
+        badge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      }
+      if (boxLogin) boxLogin.classList.add('hidden');
+      if (boxAdminActivo) boxAdminActivo.classList.remove('hidden');
+      if (txtUserEmail) txtUserEmail.textContent = user.email;
+    } else {
+      // Visitante / Modo Lectura
+      if (badge) {
+        badge.textContent = 'Modo Lectura';
+        badge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-slate-700 text-slate-300';
+      }
+      if (boxLogin) boxLogin.classList.remove('hidden');
+      if (boxAdminActivo) boxAdminActivo.classList.add('hidden');
+      if (txtUserEmail) txtUserEmail.textContent = '';
+    }
+  });
+
+  // 2. Función para iniciar sesión
+  function iniciarSesionAdmin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+      alert('Por favor ingresa correo y contraseña.');
+      return;
+    }
+
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(() => {
+        alert('¡Bienvenido! Modo Administrador activado.');
+        document.getElementById('login-password').value = '';
+      })
+      .catch((error) => {
+        alert('Error al ingresar: ' + error.message);
+      });
+  }
+
+  // 3. Función para cerrar sesión
+  function cerrarSesionAdmin() {
+    firebase.auth().signOut()
+      .then(() => {
+        alert('Sesión cerrada. La app queda en Modo Lectura.');
+      })
+      .catch((error) => {
+        alert('Error al cerrar sesión: ' + error.message);
+      });
+  }
+</script>
       apiKey: "AIzaSyDGHK8XrH5C3XCKJZXFrBi15AWnQ7ar38",
       authDomain: "fletes-9c875.firebaseapp.com",
       databaseURL: "https://fletes-9c875-default-rtdb.firebaseio.com",
