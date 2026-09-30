@@ -76,6 +76,10 @@
 
     <!-- 1. PESTAÑA RESUMEN -->
     <section id="sec-resumen" class="tab-content space-y-6">
+      <button type="button" onclick="exportarResumenAExcel()" 
+        class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+  <i class="fa-solid fa-file-excel"></i> Exportar Resumen a Excel
+</button>
       <!-- Tarjetas de Métricas -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
@@ -915,6 +919,35 @@ firebase.auth().onAuthStateChanged((user) => {
     if (panelActivo) panelActivo.classList.add('hidden');
   }
 });
+    function exportarResumenAExcel() {
+  // 1. Obtener valores de la pestaña Resumen (ajusta los IDs si difieren en tu HTML)
+  const totalViajes = document.getElementById('resumen-total-viajes')?.textContent || '0';
+  const ingresosTotales = document.getElementById('resumen-ingresos')?.textContent || '0';
+  const gastosTotales = document.getElementById('resumen-gastos')?.textContent || '0';
+  const gananciaNeta = document.getElementById('resumen-ganancia')?.textContent || '0';
+  const fechaExportacion = new Date().toLocaleDateString('es-PY');
+
+  // 2. Armar las filas del archivo CSV / Excel (separado por comas o punto y coma)
+  let contenido = "\uFEFF"; // Carácter BOM para que Excel reconozca tildes y caracteres especiales
+  contenido += "REPORTE DE RESUMEN - FLETES PAELO\n";
+  contenido += `Fecha de Exportación:;${fechaExportacion}\n\n`;
+  contenido += "Métrica;Valor\n";
+  contenido += `Total de Viajes Realizados;${totalViajes}\n`;
+  contenido += `Ingresos Totales;${ingresosTotales}\n`;
+  contenido += `Gastos Totales;${gastosTotales}\n`;
+  contenido += `Ganancia Neta;${gananciaNeta}\n`;
+
+  // 3. Crear el archivo Blob y disparar la descarga
+  const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement('a');
+  
+  enlace.setAttribute('href', url);
+  enlace.setAttribute('download', `Resumen_Fletes_Paelo_${fechaExportacion.replace(/\//g, '-')}.csv`);
+  document.body.appendChild(enlace);
+  enlace.click();
+  document.body.removeChild(enlace);
+}
   </script>
 </body>
 </html>
