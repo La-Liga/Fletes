@@ -17,6 +17,7 @@
   <!-- Firebase JS SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
   <style>
     /* Temas de Color Dinámicos */
@@ -839,6 +840,46 @@
     function recargarApp() {
       window.location.reload();
     }
+    // Funciones de Administrador
+function iniciarSesionAdmin() {
+  const email = document.getElementById('admin-email').value;
+  const password = document.getElementById('admin-password').value;
+
+  if (!email || !password) {
+    alert("Por favor, ingresa el correo y la contraseña.");
+    return;
+  }
+
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      alert("¡Sesión iniciada con éxito! Ya puedes guardar y editar datos.");
+    })
+    .catch((error) => {
+      console.error("Error al iniciar sesión:", error);
+      alert("Error de acceso: " + error.message);
+    });
+}
+
+function cerrarSesionAdmin() {
+  firebase.auth().signOut().then(() => {
+    alert("Has cerrado sesión. Modo solo lectura activado.");
+  });
+}
+
+firebase.auth().onAuthStateChanged((user) => {
+  const formLogin = document.getElementById('form-login-admin');
+  const panelActivo = document.getElementById('panel-admin-activo');
+  const emailDisplay = document.getElementById('admin-email-display');
+
+  if (user) {
+    if (formLogin) formLogin.classList.add('hidden');
+    if (panelActivo) panelActivo.classList.remove('hidden');
+    if (emailDisplay) emailDisplay.textContent = `Admin: ${user.email}`;
+  } else {
+    if (formLogin) formLogin.classList.remove('hidden');
+    if (panelActivo) panelActivo.classList.add('hidden');
+  }
+});
   </script>
 </body>
 </html>
