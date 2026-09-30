@@ -76,8 +76,7 @@
 
     <!-- 1. PESTAÑA RESUMEN -->
     <section id="sec-resumen" class="tab-content space-y-6">
-      <button type="button" onclick="exportarResumenAExcel()" 
-        class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+      <button type="button" onclick="exportarResumenAExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
   <i class="fa-solid fa-file-excel"></i> Exportar Resumen a Excel
 </button>
       <!-- Tarjetas de Métricas -->
@@ -919,44 +918,9 @@ firebase.auth().onAuthStateChanged((user) => {
     if (panelActivo) panelActivo.classList.add('hidden');
   }
 });
-  function exportarResumenAExcel() {
-  // Función auxiliar para obtener texto de un elemento buscando por varios posibles IDs o selectores
-  const obtenerTexto = (ids) => {
-    for (let id of ids) {
-      const el = document.getElementById(id);
-      if (el && el.textContent.trim() !== '') {
-        return el.textContent.trim();
-      }
-    }
-    return '0';
-  };
-
-  // Capturamos los valores usando los IDs habituales de la pestaña Resumen
-  const totalViajes = obtenerTexto(['resumen-total-viajes', 'total-viajes', 'lblTotalViajes', 'stat-viajes']);
-  const ingresosTotales = obtenerTexto(['resumen-ingresos', 'ingresos-totales', 'lblIngresos', 'stat-ingresos']);
-  const gastosTotales = obtenerTexto(['resumen-gastos', 'gastos-totales', 'lblGastos', 'stat-gastos']);
-  const gananciaNeta = obtenerTexto(['resumen-ganancia', 'ganancia-neta', 'lblGanancia', 'stat-ganancia']);
-  const fechaExportacion = new Date().toLocaleDateString('es-PY');
-
-  let contenido = "\uFEFF"; // BOM UTF-8 para Excel
-  contenido += "REPORTE DE RESUMEN - FLETES PAELO\n";
-  contenido += `Fecha de Exportación:;${fechaExportacion}\n\n`;
-  contenido += "Métrica;Valor\n";
-  contenido += `Total de Viajes Realizados;${totalViajes}\n`;
-  contenido += `Ingresos Totales;${ingresosTotales}\n`;
-  contenido += `Gastos Totales;${gastosTotales}\n`;
-  contenido += `Ganancia Neta;${gananciaNeta}\n`;
-
-  const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const enlace = document.createElement('a');
-  
-  enlace.setAttribute('href', url);
-  enlace.setAttribute('download', `Resumen_Fletes_Paelo_${fechaExportacion.replace(/\//g, '-')}.csv`);
-  document.body.appendChild(enlace);
-  enlace.click();
-  document.body.removeChild(enlace);
-}
+<button type="button" onclick="exportarResumenAExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+  <i class="fa-solid fa-file-excel"></i> Exportar Resumen a Excel
+</button>
   </script>
 </body>
 </html>
