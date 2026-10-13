@@ -83,15 +83,15 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
           <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Total Ingresos</p>
-          <p id="resumenIngresos" class="text-3xl font-extrabold text-emerald-400 mt-2">$0</p>
+          <p id="resumenIngresos" class="text-3xl font-extrabold text-emerald-400 mt-2">Gs. 0</p>
         </div>
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
           <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Total Gastos</p>
-          <p id="resumenGastos" class="text-3xl font-extrabold text-rose-400 mt-2">$0</p>
+          <p id="resumenGastos" class="text-3xl font-extrabold text-rose-400 mt-2">Gs. 0</p>
         </div>
         <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
           <p class="text-xs text-slate-400 uppercase font-bold tracking-wider">Balance Neto</p>
-          <p id="resumenBalance" class="text-3xl font-extrabold text-accent mt-2">$0</p>
+          <p id="resumenBalance" class="text-3xl font-extrabold text-accent mt-2">Gs. 0</p>
         </div>
       </div>
 
@@ -144,15 +144,15 @@
             <input type="number" id="cKm" oninput="calcularCotizacion()" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Precio por Km ($)</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Precio por Km (Gs.)</label>
             <input type="number" id="cPrecioKm" oninput="calcularCotizacion()" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Carga / Descarga / Adicionales ($)</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Carga / Descarga / Adicionales (Gs.)</label>
             <input type="number" id="cAdicional" oninput="calcularCotizacion()" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-300 mb-1">Peajes Estimados ($)</label>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Peajes Estimados (Gs.)</label>
             <input type="number" id="cPeaje" oninput="calcularCotizacion()" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
           </div>
         </div>
@@ -160,7 +160,7 @@
         <div class="mt-6 p-4 bg-slate-900/90 border border-slate-700 rounded-lg flex justify-between items-center flex-wrap gap-4">
           <div>
             <p class="text-xs text-slate-400 uppercase font-bold">Total Cotizado</p>
-            <p id="cTotal" class="text-2xl font-extrabold text-accent">$0</p>
+            <p id="cTotal" class="text-2xl font-extrabold text-accent">Gs. 0</p>
           </div>
           <button onclick="copiarCotizacion()" class="btn-accent px-4 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2">
             <i class="fa-solid fa-copy"></i> Copiar Cotización
@@ -179,12 +179,20 @@
           <input type="hidden" id="vEditId">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">N.º de Servicio</label>
+              <input type="text" id="vNumero" required placeholder="Ej: 001" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Cliente</label>
               <input type="text" id="vCliente" required placeholder="Nombre del cliente" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto ($)</label>
-              <input type="number" id="vMonto" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Tipo de Servicio / Carga</label>
+              <input type="text" id="vTipoServicio" required placeholder="Ej: Materiales de construcción" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto (Gs.)</label>
+              <input type="number" id="vMonto" step="1" required placeholder="0" oninput="actualizarCamposCobranza()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Origen</label>
@@ -215,10 +223,31 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Estado de Pago</label>
-              <select id="vEstado" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+              <select id="vEstado" required onchange="actualizarCamposCobranza()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
                 <option value="cobrado">Cobrado / Pagado</option>
                 <option value="pendiente">Pendiente de Pago</option>
               </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Forma de Pago</label>
+              <select id="vFormaPago" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Crédito">Crédito</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto Abonado (Gs.)</label>
+              <input type="number" id="vAbonado" step="1" min="0" placeholder="0" oninput="actualizarCamposCobranza()" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Saldo Pendiente (Gs.)</label>
+              <input type="text" id="vSaldo" readonly value="Gs. 0" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-amber-300 font-mono">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha Acordada de Pago <span class="text-slate-500 font-normal">(si corresponde)</span></label>
+              <input type="date" id="vFechaPago" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div class="md:col-span-2">
               <label class="block text-xs font-semibold text-slate-300 mb-1">Detalle / Observaciones</label>
@@ -272,17 +301,24 @@
                 <option value="Combustible">Combustible</option>
                 <option value="Peaje">Peaje</option>
                 <option value="Mantenimiento">Mantenimiento</option>
+                <option value="Reparación">Reparación</option>
+                <option value="Repuestos">Repuestos</option>
+                <option value="Patente / Habilitación">Patente / Habilitación</option>
                 <option value="Comida">Comida / Viáticos</option>
                 <option value="Otros">Otros</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto ($)</label>
-              <input type="number" id="gMonto" step="0.01" required placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Monto (Gs.)</label>
+              <input type="number" id="gMonto" step="1" required placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha</label>
               <input type="date" id="gFecha" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">N.º de Servicio Relacionado <span class="text-slate-500 font-normal">(Opcional)</span></label>
+              <input type="text" id="gServicioRef" placeholder="Ej: 001 o General" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-rose-400 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Nota / Observaciones</label>
@@ -358,7 +394,7 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Teléfono de Contacto</label>
-              <input type="text" id="cfgTelefono" placeholder="Ej: +54 9 11 1234-5678" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
+              <input type="text" id="cfgTelefono" placeholder="Ej: +595 981 123456" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm focus:border-amber-400 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Cuenta Bancaria / CBU / Alias</label>
@@ -426,6 +462,36 @@
     document.getElementById('vFecha').value = today;
     document.getElementById('gFecha').value = today;
 
+    function formatGs(valor) {
+      const numero = parseFloat(valor || 0);
+      return `Gs. ${numero.toLocaleString('es-PY', { maximumFractionDigits: 0 })}`;
+    }
+
+    function actualizarCamposCobranza() {
+      const monto = parseFloat(document.getElementById('vMonto')?.value) || 0;
+      const estado = document.getElementById('vEstado')?.value || 'cobrado';
+      const abonadoInput = document.getElementById('vAbonado');
+      const fechaPagoInput = document.getElementById('vFechaPago');
+      const saldoInput = document.getElementById('vSaldo');
+      if (!abonadoInput || !saldoInput) return;
+
+      if (estado === 'cobrado') {
+        abonadoInput.value = monto || '';
+        abonadoInput.disabled = true;
+        if (fechaPagoInput) fechaPagoInput.disabled = true;
+        saldoInput.value = formatGs(0);
+      } else {
+        abonadoInput.disabled = false;
+        if (fechaPagoInput) fechaPagoInput.disabled = false;
+        let abonado = parseFloat(abonadoInput.value) || 0;
+        if (abonado > monto) {
+          abonado = monto;
+          abonadoInput.value = monto || '';
+        }
+        saldoInput.value = formatGs(Math.max(0, monto - abonado));
+      }
+    }
+
     let globalViajes = {};
     let globalGastos = {};
     let globalConfig = {};
@@ -464,7 +530,7 @@
       const peaje = parseFloat(document.getElementById('cPeaje').value) || 0;
 
       const total = (km * precioKm) + adicional + peaje;
-      document.getElementById('cTotal').innerText = `$${total.toLocaleString()}`;
+      document.getElementById('cTotal').innerText = formatGs(total);
     }
 
     function copiarCotizacion() {
@@ -508,15 +574,15 @@
       let actividades = [];
 
       Object.entries(globalViajes).forEach(([id, v]) => {
-        if (v.estado === 'cobrado') {
-          totalIngresos += parseFloat(v.monto || 0);
-        }
+        const montoViaje = parseFloat(v.monto || 0);
+        const ingresoEfectivo = v.estado === 'cobrado' ? montoViaje : parseFloat(v.abonado || 0);
+        totalIngresos += ingresoEfectivo;
         actividades.push({
           tipo: 'viaje',
           fecha: v.fecha,
           titulo: `Viaje - ${v.cliente}`,
           sub: `${v.origen} ➔ ${v.destino} ${v.kmRecorridos ? ' (' + v.kmRecorridos + ' km)' : ''}`,
-          monto: v.monto,
+          monto: ingresoEfectivo,
           estado: v.estado,
           timestamp: v.timestamp || 0
         });
@@ -536,9 +602,9 @@
 
       const balance = totalIngresos - totalGastos;
 
-      document.getElementById('resumenIngresos').innerText = `$${totalIngresos.toLocaleString()}`;
-      document.getElementById('resumenGastos').innerText = `$${totalGastos.toLocaleString()}`;
-      document.getElementById('resumenBalance').innerText = `$${balance.toLocaleString()}`;
+      document.getElementById('resumenIngresos').innerText = formatGs(totalIngresos);
+      document.getElementById('resumenGastos').innerText = formatGs(totalGastos);
+      document.getElementById('resumenBalance').innerText = formatGs(balance);
 
       // Odómetro y Mantenimiento
       const kmActual = parseFloat(globalConfig.kmActual || 0);
@@ -607,7 +673,7 @@
           </div>
           <div class="text-right">
             <p class="text-sm font-bold ${isViaje ? 'text-emerald-400' : 'text-rose-400'} font-mono">
-              ${isViaje ? '+' : '-'}$${act.monto}
+              ${isViaje ? '+' : '-'}${formatGs(act.monto)}
             </p>
           </div>`;
         listEl.appendChild(card);
@@ -622,16 +688,28 @@
       const kmFin = parseFloat(document.getElementById('vKmFinal').value) || 0;
       const kmRec = (kmFin >= kmInit && kmFin > 0 && kmInit > 0) ? (kmFin - kmInit) : 0;
 
+      const monto = parseFloat(document.getElementById('vMonto').value) || 0;
+      const estado = document.getElementById('vEstado').value;
+      let abonado = estado === 'cobrado' ? monto : (parseFloat(document.getElementById('vAbonado').value) || 0);
+      abonado = Math.max(0, Math.min(monto, abonado));
+      const saldo = Math.max(0, monto - abonado);
+
       const viaje = {
+        numero: document.getElementById('vNumero').value.trim(),
         cliente: document.getElementById('vCliente').value,
-        monto: parseFloat(document.getElementById('vMonto').value),
+        tipoServicio: document.getElementById('vTipoServicio').value,
+        monto: monto,
         origen: document.getElementById('vOrigen').value,
         destino: document.getElementById('vDestino').value,
         kmInicial: kmInit,
         kmFinal: kmFin,
         kmRecorridos: kmRec,
         fecha: document.getElementById('vFecha').value,
-        estado: document.getElementById('vEstado').value,
+        estado: saldo <= 0 ? 'cobrado' : estado,
+        formaPago: document.getElementById('vFormaPago').value,
+        abonado: abonado,
+        saldo: saldo,
+        fechaPago: document.getElementById('vFechaPago').value || '',
         detalle: document.getElementById('vDetalle').value,
         timestamp: Date.now()
       };
@@ -656,7 +734,9 @@
 
     function editViaje(id, item) {
       document.getElementById('vEditId').value = id;
+      document.getElementById('vNumero').value = item.numero || '';
       document.getElementById('vCliente').value = item.cliente;
+      document.getElementById('vTipoServicio').value = item.tipoServicio || '';
       document.getElementById('vMonto').value = item.monto;
       document.getElementById('vOrigen').value = item.origen;
       document.getElementById('vDestino').value = item.destino;
@@ -665,7 +745,11 @@
       calcKmViaje();
       document.getElementById('vFecha').value = item.fecha;
       document.getElementById('vEstado').value = item.estado || 'cobrado';
+      document.getElementById('vFormaPago').value = item.formaPago || 'Efectivo';
+      document.getElementById('vAbonado').value = item.abonado ?? (item.estado === 'cobrado' ? item.monto : 0);
+      document.getElementById('vFechaPago').value = item.fechaPago || '';
       document.getElementById('vDetalle').value = item.detalle || '';
+      actualizarCamposCobranza();
 
       document.getElementById('viajeFormTitle').innerHTML = '<i class="fa-solid fa-pen text-amber-400"></i> Editar Viaje';
       document.getElementById('cancelEditViajeBtn').classList.remove('hidden');
@@ -677,12 +761,13 @@
       document.getElementById('formViaje').reset();
       document.getElementById('vFecha').value = today;
       calcKmViaje();
+      actualizarCamposCobranza();
       document.getElementById('viajeFormTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-accent"></i> Registrar Nuevo Viaje / Flete';
       document.getElementById('cancelEditViajeBtn').classList.add('hidden');
     }
 
-    function marcarCobrado(id) {
-      db.ref(`viajes/${id}`).update({ estado: 'cobrado' }).then(() => {
+    function marcarCobrado(id, monto) {
+      db.ref(`viajes/${id}`).update({ estado: 'cobrado', abonado: monto, saldo: 0 }).then(() => {
         alert('¡Viaje marcado como cobrado!');
       });
     }
@@ -695,6 +780,7 @@
         categoria: document.getElementById('gCategoria').value,
         monto: parseFloat(document.getElementById('gMonto').value),
         fecha: document.getElementById('gFecha').value,
+        servicioRef: document.getElementById('gServicioRef').value.trim(),
         nota: document.getElementById('gNota').value,
         timestamp: Date.now()
       };
@@ -717,6 +803,7 @@
       document.getElementById('gCategoria').value = item.categoria;
       document.getElementById('gMonto').value = item.monto;
       document.getElementById('gFecha').value = item.fecha;
+      document.getElementById('gServicioRef').value = item.servicioRef || '';
       document.getElementById('gNota').value = item.nota || '';
 
       document.getElementById('gastoFormTitle').innerHTML = '<i class="fa-solid fa-pen text-rose-400"></i> Editar Gasto';
@@ -800,11 +887,12 @@
         card.innerHTML = `
           <div>
             <div class="flex items-center gap-2">
-              <p class="font-bold text-slate-100">${item.cliente}</p>
+              <p class="font-bold text-slate-100">${item.numero ? 'N.º ' + item.numero + ' • ' : ''}${item.cliente}</p>
               ${badge}
             </div>
-            <p class="text-xs text-amber-400 font-mono font-bold">$${item.monto} ${kmInfo}</p>
+            <p class="text-xs text-amber-400 font-mono font-bold">${formatGs(item.monto)} ${kmInfo}</p>
             <p class="text-xs text-slate-400">${item.origen} ➔ ${item.destino}</p>
+            <p class="text-xs text-slate-400">${item.tipoServicio || 'Servicio de flete'}${item.formaPago ? ' • ' + item.formaPago : ''}</p>
             <p class="text-xs text-slate-500">${item.fecha} ${item.detalle ? '• ' + item.detalle : ''}</p>
           </div>
           <div class="flex items-center gap-1">
@@ -821,13 +909,15 @@
           cardP.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
           cardP.innerHTML = `
             <div>
-              <p class="font-bold text-slate-100">${item.cliente}</p>
-              <p class="text-xs text-amber-400 font-mono font-bold">$${item.monto}</p>
+              <p class="font-bold text-slate-100">${item.numero ? 'N.º ' + item.numero + ' • ' : ''}${item.cliente}</p>
+              <p class="text-xs text-slate-300">Total: <span class="font-mono font-bold text-amber-400">${formatGs(item.monto)}</span></p>
+              <p class="text-xs text-slate-300">Abonado: <span class="font-mono text-emerald-400">${formatGs(item.abonado || 0)}</span></p>
+              <p class="text-xs text-slate-300">Saldo: <span class="font-mono font-bold text-rose-400">${formatGs(item.saldo ?? Math.max(0, (parseFloat(item.monto || 0) - parseFloat(item.abonado || 0))))}</span></p>
               <p class="text-xs text-slate-400">${item.origen} ➔ ${item.destino}</p>
-              <p class="text-xs text-slate-500">${item.fecha}</p>
+              <p class="text-xs text-slate-500">Servicio: ${item.fecha}${item.fechaPago ? ' • Pago acordado: ' + item.fechaPago : ''}</p>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="marcarCobrado('${id}')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-lg font-bold flex items-center gap-1">
+              <button onclick="marcarCobrado('${id}', ${Number(item.monto || 0)})" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-lg font-bold flex items-center gap-1">
                 <i class="fa-solid fa-check"></i> Cobrado
               </button>
             </div>`;
@@ -856,8 +946,8 @@
         card.className = "bg-slate-900 border border-slate-700/80 rounded-lg p-3 flex justify-between items-center gap-2";
         card.innerHTML = `
           <div>
-            <p class="font-bold text-slate-100">${item.categoria} <span class="text-xs text-rose-400 font-mono">($${item.monto})</span></p>
-            <p class="text-xs text-slate-400">${item.nota || ''}</p>
+            <p class="font-bold text-slate-100">${item.categoria} <span class="text-xs text-rose-400 font-mono">(${formatGs(item.monto)})</span></p>
+            <p class="text-xs text-slate-400">${item.servicioRef ? 'Servicio: ' + item.servicioRef + ' • ' : ''}${item.nota || ''}</p>
             <p class="text-xs text-slate-500">${item.fecha}</p>
           </div>
           <div class="flex items-center gap-1">
