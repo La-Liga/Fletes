@@ -6,8 +6,8 @@
   <title>Fletes</title>
 
   <!-- Iconos de la App (Favicon / App Icon) -->
-  <link rel="icon" type="image/png" href="logo.png">
-  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="icon" type="image/png" href="icon-transparent-v3-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-transparent-v3.png">
 
   <!-- Tailwind CSS CDN -->
 
@@ -33,55 +33,16 @@
     .border-accent { border-color: var(--accent-color); }
   </style>
 
-<!-- Entrada animada: independiente de Firebase y de la conexión. -->
-<style id="app-launch-style">
-#app-launch{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:#061127;color:#f59e0b;opacity:1;transition:opacity .36s ease;}
-#app-launch[hidden]{display:none!important;}
-#app-launch .launch-mark{display:flex;flex-direction:column;align-items:center;gap:28px;animation:launch-in .55s cubic-bezier(.16,1,.3,1) both;}
-#app-launch img{display:block;width:144px;height:144px;object-fit:contain;border-radius:0;}
-#app-launch .launch-spinner{width:26px;height:26px;border:3px solid transparent;border-top-color:currentColor;border-right-color:currentColor;border-radius:50%;animation:launch-spin .75s linear infinite;}
-#app-launch.is-leaving{opacity:0;pointer-events:none;}
-body.launch-pending{overflow:hidden;}
-body.launch-pending > :not(#app-launch):not(script):not(style){visibility:hidden;}
-#app-launch img{width:192px;height:96px;}
-#app-launch .launch-title{color:#fff;font:700 30px/1.1 system-ui,sans-serif;margin-top:-16px;}
-@keyframes launch-in{from{opacity:0;transform:translateY(8px) scale(.88)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes launch-spin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){#app-launch,#app-launch .launch-mark,#app-launch .launch-spinner{animation:none;transition:none;}}
+<!-- Fundido breve del contenido, sin segunda pantalla de inicio. -->
+<style id="app-entry-style">
+@keyframes app-content-enter{from{opacity:0}to{opacity:1}}
+body{animation:app-content-enter .24s ease-out;}
+@media(prefers-reduced-motion:reduce){body{animation:none;}}
 </style>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#061127">
 </head>
 <body id="appBody" class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans theme-amber">
-<div id="app-launch" role="status" aria-label="Abriendo Fletes" hidden>
-  <div class="launch-mark"><img src="./logo-app.png" alt="Fletes" width="144" height="144" fetchpriority="high"><strong class="launch-title">Fletes</strong><span class="launch-spinner" aria-hidden="true"></span></div>
-</div>
-<script>
-(function () {
-  var screen = document.getElementById('app-launch');
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var started = Date.now();
-  var finished = false;
-  var watchdog;
-  function finish() {
-    if (finished) return;
-    finished = true;
-    clearTimeout(watchdog);
-    document.body.classList.remove('launch-pending');
-    screen.classList.add('is-leaving');
-    screen.setAttribute('aria-hidden', 'true');
-    setTimeout(function () { screen.remove(); }, reduced ? 0 : 400);
-  }
-  screen.hidden = false;
-  document.body.classList.add('launch-pending');
-  // Límite de seguridad: nunca esperar indefinidamente a servicios externos.
-  watchdog = setTimeout(finish, 4000);
-  document.addEventListener('DOMContentLoaded', function () {
-    setTimeout(finish, Math.max(0, (reduced ? 0 : 850) - (Date.now() - started)));
-  }, { once: true });
-  window.addEventListener('pageshow', function (event) { if (event.persisted) finish(); });
-})();
-</script>
 
 
   <!-- Encabezado -->

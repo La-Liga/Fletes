@@ -1,5 +1,5 @@
-const CACHE = 'fletes-launch-v2';
-const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './logo-app.png', './icon-512.png'];
+const CACHE = 'fletes-entry-v4';
+const ASSETS = ['./', './index.html', './manifest.json', './icon-transparent-v3-192.png', './logo-app.png', './icon-transparent-v3-512.png'];
 
 self.addEventListener('install', e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
